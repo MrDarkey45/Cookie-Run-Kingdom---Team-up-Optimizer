@@ -61,6 +61,7 @@ class CounterTeamGenerator:
         """
         self.optimizer = optimizer
         self.all_cookies = optimizer.all_cookies
+        self.all_treasures = optimizer.all_treasures
 
     def analyze_enemy_team(self, enemy_team: Team) -> Dict:
         """
@@ -392,6 +393,139 @@ class CounterTeamGenerator:
 
         return counter_strategy
 
+    def recommend_counter_treasures(self, enemy_team: Team, counter_team: Team, strategy: Dict) -> List[Tuple]:
+        """
+        Recommend treasures specifically for countering enemy team.
+
+        Args:
+            enemy_team: Enemy team to counter
+            counter_team: Your counter team
+            strategy: Counter strategy dict from generate_counter_strategies
+
+        Returns:
+            List of (Treasure, score, reason) tuples
+        """
+        from team_optimizer import Treasure
+
+        analysis = self.analyze_enemy_team(enemy_team)
+        treasure_scores = []
+
+        for treasure in self.all_treasures:
+            score = 0.0
+            reasons = []
+
+            # Base tier score
+            tier_base = {'S+': 10.0, 'S': 8.0, 'A': 6.0, 'B': 4.0, 'C': 2.0}
+            score += tier_base.get(treasure.tier_ranking, 2.0)
+
+            # Strategy-based treasure recommendations
+
+            # 1. Counter healing-heavy teams with anti-heal or burst damage
+            if analysis['healers'] >= 2:
+                if treasure.atk_boost_max > 0 or treasure.crit_boost_max > 0:
+                    score += 4.0
+                    reasons.append("Burst damage to overwhelm healing")
+                if treasure.enemy_debuff:
+                    score += 3.0
+                    reasons.append("Debuffs to reduce enemy effectiveness")
+
+            # 2. Counter tank-heavy teams with sustained damage and CDR
+            if analysis['tanks'] >= 2:
+                if treasure.cooldown_reduction_max > 0:
+                    score += 4.0
+                    reasons.append("CDR for sustained pressure vs tanks")
+                if treasure.atk_boost_max > 0:
+                    score += 2.0
+                    reasons.append("ATK boost for tank-busting")
+
+            # 3. Counter exposed backline with offensive treasures
+            if analysis['rear_position'] >= 3 and analysis['front_position'] <= 1:
+                if treasure.atk_boost_max > 0 or treasure.crit_boost_max > 0:
+                    score += 5.0
+                    reasons.append("Offensive stats to punish weak frontline")
+                if treasure.cooldown_reduction_max > 0:
+                    score += 3.0
+                    reasons.append("Faster skills to burst backline")
+
+            # 4. Counter Shadow Milk with defensive treasures
+            if analysis['has_shadow_milk']:
+                if treasure.hp_shield_max > 0:
+                    score += 4.0
+                    reasons.append("Shield to survive Shadow Milk burst")
+                if treasure.dmg_resist_max > 0:
+                    score += 3.0
+                    reasons.append("DMG resist vs Shadow Milk")
+                if treasure.debuff_cleanse:
+                    score += 3.0
+                    reasons.append("Cleanse Shadow Milk debuffs")
+
+            # 5. Counter CC-heavy teams with sustain
+            if analysis['crowd_control'] >= 2:
+                if treasure.hp_shield_max > 0 or treasure.heal_max > 0:
+                    score += 4.0
+                    reasons.append(f"Sustain to survive {', '.join(analysis['cc_types'])} CC")
+                if treasure.debuff_cleanse:
+                    score += 5.0
+                    reasons.append("Cleanse crowd control effects")
+
+            # 6. Counter burst damage teams with defense
+            if analysis['burst_damage']:
+                if treasure.hp_shield_max > 0:
+                    score += 5.0
+                    reasons.append("Shield critical vs burst damage")
+                if treasure.dmg_resist_max > 0:
+                    score += 4.0
+                    reasons.append("DMG resist to survive initial burst")
+                if treasure.heal_max > 0:
+                    score += 3.0
+                    reasons.append("Healing to recover from burst")
+                if treasure.revive:
+                    score += 4.0
+                    reasons.append("Revival as backup vs burst")
+
+            # 7. Exploit no immunity with offensive treasures
+            if not analysis['immunity']:
+                if treasure.enemy_debuff:
+                    score += 4.0
+                    reasons.append("Debuffs (enemy has no immunity)")
+                if treasure.cooldown_reduction_max > 0:
+                    score += 2.0
+                    reasons.append("CDR to spam CC")
+
+            # 8. Exploit no cleanse with debuff treasures
+            if not analysis['cleanse']:
+                if treasure.enemy_debuff:
+                    score += 3.0
+                    reasons.append("Enemy can't cleanse debuffs")
+
+            # Universal treasures always score well
+            if 'Universal' in treasure.recommended_archetypes:
+                score += 3.0
+                if not reasons:
+                    reasons.append("Universal treasure (works with any strategy)")
+
+            # Archetype matching bonus
+            team_archetypes = set()
+            counter_role_dist = counter_team.get_role_distribution()
+            if any(role in counter_role_dist for role in ['Magic', 'Ranged', 'Bomber', 'Ambush']):
+                team_archetypes.add('DPS')
+            if any(role in counter_role_dist for role in ['Defense', 'Charge']):
+                team_archetypes.add('Tank')
+            if any(role in counter_role_dist for role in ['Healing', 'Support']):
+                team_archetypes.add('Sustain')
+
+            matching_archetypes = set(treasure.recommended_archetypes) & team_archetypes
+            if matching_archetypes:
+                score += len(matching_archetypes) * 1.5
+
+            # Compile final recommendation
+            reason = reasons[0] if reasons else "Standard treasure"
+            treasure_scores.append((treasure, score, reason))
+
+        # Sort by score and return top 3
+        treasure_scores.sort(key=lambda x: x[1], reverse=True)
+        return treasure_scores[:3]
+
     def find_counter_teams(
         self,
         enemy_team: Team,
@@ -471,13 +605,34 @@ class CounterTeamGenerator:
         scored_teams = []
         for team in teams:
             counter_score = self._calculate_counter_score(team, enemy_team, counter_strategy)
+
+            # Get treasure recommendations for this counter team
+            recommended_treasures = self.recommend_counter_treasures(enemy_team, team, counter_strategy)
+
             counter_info = {
                 'counter_score': counter_score,
                 'team_score': team.composition_score,
                 'combined_score': (counter_score * 0.6) + (team.composition_score * 0.4),
                 'strategy': counter_strategy['strategy_description'],
                 'weaknesses_exploited': weaknesses,
-                'priority_targets': counter_strategy['priority_targets']
+                'priority_targets': counter_strategy['priority_targets'],
+                'recommended_treasures': [
+                    {
+                        'name': t[0].name,
+                        'tier': t[0].tier_ranking,
+                        'score': round(t[1], 2),
+                        'reason': t[2],
+                        'effects': {
+                            'atk_boost': t[0].atk_boost_max,
+                            'crit_boost': t[0].crit_boost_max,
+                            'cooldown_reduction': t[0].cooldown_reduction_max,
+                            'dmg_resist': t[0].dmg_resist_max,
+                            'hp_shield': t[0].hp_shield_max,
+                            'heal': t[0].heal_max
+                        }
+                    }
+                    for t in recommended_treasures
+                ]
             }
             scored_teams.append((team, counter_info))
 

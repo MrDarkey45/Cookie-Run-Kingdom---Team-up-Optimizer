@@ -6,18 +6,36 @@ A comprehensive Python application for optimizing Cookie Run: Kingdom team compo
 
 ## 📁 Project Structure
 
+> **📌 For detailed project organization, see [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md)**
+
 ```
 /Models/
 ├── README.md                    # This file
+├── PROJECT_OVERVIEW.md          # Detailed project structure & guide
 ├── crk-cookies.csv             # Cookie database (177 cookies)
+├── cookie_abilities.csv        # Cookie abilities & skills data
+├── crk_treasures.csv           # Treasure database (21 treasures)
 ├── cookie_analysis.py          # Data analysis and visualization
 ├── team_optimizer.py           # Core optimization engine
-├── cookie_analysis.png         # Generated visualization
+├── counter_team_generator.py   # Counter-team generation
+├── synergy_calculator.py       # Team synergy calculations
 │
 ├── docs/                        # Documentation
 │   ├── OPTIMIZATION_GUIDE.md   # Algorithm comparison guide
 │   ├── WEB_UI_GUIDE.md         # Web interface user guide
-│   └── WEB_UI_FEATURES.md      # Web UI feature documentation
+│   ├── WEB_UI_FEATURES.md      # Web UI feature documentation
+│   ├── TREASURE_QUICKSTART.md  # Treasure system quick guide
+│   ├── TREASURE_INTEGRATION_SUMMARY.md  # Treasure implementation
+│   └── ASCENDED_COOKIE_FIX.md  # Ascended cookie bug fix details
+│
+├── scripts/                     # Utility scripts
+│   ├── fix_ascended_cookies.py      # Fixes Ascended cookie duplicates
+│   └── fix_abilities_ascended.py    # Fixes abilities CSV naming
+│
+├── tests/                       # Test scripts
+│   ├── test_treasure_scoring.py
+│   ├── test_counter_treasures.py
+│   └── test_api_treasures.py
 │
 ├── examples/                    # Example scripts
 │   ├── example_advanced_mode.py         # Advanced scoring demo

@@ -133,6 +133,10 @@ class Treasure:
             return False
         return self.name == other.name
 
+    def __hash__(self) -> int:
+        """Hash based on treasure name for set operations."""
+        return hash(self.name)
+
     def to_dict(self) -> Dict:
         """Export treasure as dictionary for JSON serialization."""
         return {
@@ -377,9 +381,10 @@ class Team:
         - Power Score: 0-35 points
         - Bonus Modifiers: 0-10 points
         - Synergy Bonus: 0-20 points (if enabled)
+        - Treasure Bonus: 0-15 points (if treasures equipped)
 
         Returns:
-            float: Total team score (~100-120 max with synergy)
+            float: Total team score (~100-135 max with synergy and treasures)
         """
         role_score = self._calculate_role_diversity_score()
         position_score = self._calculate_position_coverage_score()
@@ -388,12 +393,16 @@ class Team:
 
         base_score = role_score + position_score + power_score + bonus_score
 
+        # Calculate treasure bonus if treasures equipped
+        treasure_bonus = self._calculate_treasure_bonus()
+        self.treasure_bonus = treasure_bonus
+
         # Calculate synergy bonus if enabled
         if self.include_synergy:
             synergy_bonus = self._calculate_synergy_bonus()
-            return base_score + synergy_bonus
+            return base_score + treasure_bonus + synergy_bonus
 
-        return base_score
+        return base_score + treasure_bonus
 
     def _calculate_synergy_bonus(self) -> float:
         """
@@ -469,6 +478,82 @@ class Team:
 
         return bonus
 
+    def _calculate_treasure_bonus(self) -> float:
+        """
+        Calculate treasure bonus score (0-15 points).
+
+        Treasures provide bonus points based on:
+        - Treasure power scores (tier-based)
+        - Stat bonuses (ATK, CRIT, cooldown reduction)
+        - Special effects (revival, shields, healing)
+
+        Returns:
+            float: Treasure bonus points (0-15)
+        """
+        if not self.treasures or len(self.treasures) == 0:
+            return 0.0
+
+        bonus = 0.0
+
+        # Base power score from treasures (0-10 points)
+        # Average treasure power scaled to 0-10 range
+        avg_treasure_power = sum(t.get_power_score() for t in self.treasures) / len(self.treasures)
+        bonus += min(avg_treasure_power, 10.0)
+
+        # Stat bonuses (0-3 points)
+        total_atk_boost = sum(t.atk_boost_max for t in self.treasures)
+        total_crit_boost = sum(t.crit_boost_max for t in self.treasures)
+        total_cdr = sum(t.cooldown_reduction_max for t in self.treasures)
+
+        # ATK boost contribution (up to 1 point)
+        if total_atk_boost > 0:
+            bonus += min(total_atk_boost / 100.0, 1.0)
+
+        # CRIT boost contribution (up to 1 point)
+        if total_crit_boost > 0:
+            bonus += min(total_crit_boost / 30.0, 1.0)
+
+        # Cooldown reduction contribution (up to 1 point)
+        if total_cdr > 0:
+            bonus += min(total_cdr / 40.0, 1.0)
+
+        # Special effects bonus (0-2 points)
+        special_bonus = 0.0
+
+        # Revival treasure bonus
+        if any(t.revive for t in self.treasures):
+            special_bonus += 0.5
+
+        # Debuff cleanse bonus
+        if any(t.debuff_cleanse for t in self.treasures):
+            special_bonus += 0.3
+
+        # Enemy debuff bonus
+        if any(t.enemy_debuff for t in self.treasures):
+            special_bonus += 0.4
+
+        # Shield/healing bonus
+        total_shields = sum(t.hp_shield_max for t in self.treasures)
+        total_heals = sum(t.heal_max for t in self.treasures)
+        if total_shields > 0 or total_heals > 0:
+            special_bonus += 0.5
+
+        # Summon boost bonus
+        if any(t.summon_boost for t in self.treasures):
+            # Check if team has summoners
+            has_summoner = any(
+                c.skill_type == 'Summon' if hasattr(c, 'skill_type') and c.skill_type else False
+                for c in self.cookies
+            )
+            if has_summoner:
+                special_bonus += 0.8  # Big bonus if team has summoners
+            else:
+                special_bonus -= 0.3  # Small penalty if no summoners
+
+        bonus += min(special_bonus, 2.0)
+
+        return min(bonus, 15.0)
+
     def get_role_distribution(self) -> Dict[str, int]:
         """Get count of each role in the team."""
         return dict(Counter(cookie.role for cookie in self.cookies))
@@ -518,6 +603,11 @@ class Team:
             'has_healer': self.has_healer()
         }
 
+        # Include treasure data if available
+        if self.treasures and len(self.treasures) > 0:
+            result['treasures'] = [treasure.to_dict() for treasure in self.treasures]
+            result['treasure_bonus'] = round(self.treasure_bonus, 2)
+
         # Include synergy data if available
         if self.include_synergy and self.synergy_breakdown:
             result['synergy'] = {
@@ -545,6 +635,10 @@ class TeamOptimizer:
             csv_filepath: Path to the cookie CSV file
             treasures_filepath: Path to the treasures CSV file (default: 'crk_treasures.csv')
         """
+        # Store the base directory for loading auxiliary files
+        import os
+        self.base_dir = os.path.dirname(os.path.abspath(csv_filepath))
+
         self.cookies_df = load_data(csv_filepath)
         if self.cookies_df is None:
             raise ValueError(f"Failed to load data from {csv_filepath}")
@@ -567,7 +661,9 @@ class TeamOptimizer:
 
         # Load ability data from separate CSV
         try:
-            abilities_df = pd.read_csv('cookie_abilities.csv')
+            import os
+            abilities_path = os.path.join(self.base_dir, 'cookie_abilities.csv')
+            abilities_df = pd.read_csv(abilities_path)
 
             # Merge ability data with main cookie data on cookie_name
             merged_df = self.cookies_df.merge(
@@ -654,6 +750,10 @@ class TeamOptimizer:
         treasures = []
 
         try:
+            import os
+            # If path is not absolute, make it relative to base_dir
+            if not os.path.isabs(treasures_filepath):
+                treasures_filepath = os.path.join(self.base_dir, treasures_filepath)
             treasures_df = pd.read_csv(treasures_filepath)
 
             for _, row in treasures_df.iterrows():

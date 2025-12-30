@@ -13,6 +13,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from team_optimizer import TeamOptimizer, Cookie, Team
 from counter_team_generator import CounterTeamGenerator
+from cookie_images import get_cookie_image_url
 
 app = Flask(__name__)
 
@@ -40,7 +41,12 @@ RARITY_COLORS = {
 
 @app.route('/')
 def index():
-    """Render the main page."""
+    """Render the main page (new v2 UI)."""
+    return render_template('index_v2.html')
+
+@app.route('/v1')
+def index_v1():
+    """Render the old v1 UI (fallback)."""
     return render_template('index.html')
 
 
@@ -55,13 +61,49 @@ def get_cookies():
             'role': cookie.role,
             'position': cookie.position,
             'power': round(cookie.get_power_score(), 2),
-            'color': RARITY_COLORS.get(cookie.rarity, '#808080')
+            'color': RARITY_COLORS.get(cookie.rarity, '#808080'),
+            'image_url': get_cookie_image_url(cookie.name)
         })
 
     # Sort by power descending
     cookies_data.sort(key=lambda x: x['power'], reverse=True)
 
     return jsonify(cookies_data)
+
+
+@app.route('/api/treasures')
+def get_treasures():
+    """Get list of all available treasures."""
+    treasures_data = []
+    for treasure in optimizer.all_treasures:
+        treasures_data.append({
+            'name': treasure.name,
+            'rarity': treasure.rarity,
+            'activation_type': treasure.activation_type,
+            'tier_ranking': treasure.tier_ranking,
+            'effect_category': treasure.effect_category,
+            'primary_effect': treasure.primary_effect,
+            'atk_boost': treasure.atk_boost_max,
+            'crit_boost': treasure.crit_boost_max,
+            'cooldown_reduction': treasure.cooldown_reduction_max,
+            'dmg_resist': treasure.dmg_resist_max,
+            'hp_shield': treasure.hp_shield_max,
+            'heal': treasure.heal_max,
+            'revive': treasure.revive,
+            'debuff_cleanse': treasure.debuff_cleanse,
+            'enemy_debuff': treasure.enemy_debuff,
+            'summon_boost': treasure.summon_boost,
+            'recommended_archetypes': treasure.recommended_archetypes,
+            'cooldown_seconds': treasure.cooldown_seconds,
+            'special_condition': treasure.special_condition,
+            'power_score': round(treasure.get_power_score(), 2)
+        })
+
+    # Sort by tier ranking (S+ → S → A → B → C)
+    tier_order = {'S+': 0, 'S': 1, 'A': 2, 'B': 3, 'C': 4}
+    treasures_data.sort(key=lambda x: tier_order.get(x['tier_ranking'], 99))
+
+    return jsonify(treasures_data)
 
 
 @app.route('/api/optimize', methods=['POST'])
@@ -116,6 +158,7 @@ def optimize_teams():
                     'position': cookie.position,
                     'power': round(cookie.get_power_score(), 2),
                     'color': RARITY_COLORS.get(cookie.rarity, '#808080'),
+                    'image_url': get_cookie_image_url(cookie.name),
                     'isRequired': cookie.name in (required_cookies or [])
                 })
 
@@ -216,6 +259,7 @@ def generate_counter_teams():
                     'position': cookie.position,
                     'power': round(cookie.get_power_score(), 2),
                     'color': RARITY_COLORS.get(cookie.rarity, '#808080'),
+                    'image_url': get_cookie_image_url(cookie.name),
                     'element': cookie.element if hasattr(cookie, 'element') and cookie.element else 'N/A'
                 })
 
@@ -243,7 +287,8 @@ def generate_counter_teams():
                 'weaknessesExploited': len(counter_info['weaknesses_exploited']),
                 'roleDistribution': team.get_role_distribution(),
                 'positionDistribution': team.get_position_distribution(),
-                'synergy': synergy_data
+                'synergy': synergy_data,
+                'recommendedTreasures': counter_info.get('recommended_treasures', [])
             })
 
         # Format weaknesses

@@ -196,6 +196,7 @@ function closeCookieStatsModal() {
 function resetStatsForm() {
     document.getElementById('cookieLevel').value = 90;
     document.getElementById('skillLevel').value = 90;
+    document.getElementById('starLevel').value = 5;
     document.getElementById('toppingsContainer').innerHTML = '';
     currentToppings = [];
     currentEditingCookie = null;
@@ -274,10 +275,12 @@ function selectCookieForStats(cookieName) {
         const stats = cookieStats[cookie.name];
         document.getElementById('cookieLevel').value = stats.cookie_level || 90;
         document.getElementById('skillLevel').value = stats.skill_level || 90;
+        document.getElementById('starLevel').value = stats.star_level !== undefined ? stats.star_level : 5;
         currentToppings = stats.toppings || [];
     } else {
         document.getElementById('cookieLevel').value = 90;
         document.getElementById('skillLevel').value = 90;
+        document.getElementById('starLevel').value = 5;
         currentToppings = [];
     }
 
@@ -350,6 +353,7 @@ function saveCookieStats() {
 
     const cookieLevel = parseInt(document.getElementById('cookieLevel').value);
     const skillLevel = parseInt(document.getElementById('skillLevel').value);
+    const starLevel = parseInt(document.getElementById('starLevel').value);
     const addToRequired = document.getElementById('addToRequired').checked;
 
     // Calculate average topping quality (0-5 scale) from detailed toppings
@@ -362,6 +366,7 @@ function saveCookieStats() {
     cookieStats[currentEditingCookie.name] = {
         cookie_level: cookieLevel,
         skill_level: skillLevel,
+        star_level: starLevel,
         topping_quality: toppingQuality,
         toppings: [...currentToppings] // Store detailed topping info
     };
@@ -400,18 +405,20 @@ function updateStatsSummary() {
         return;
     }
 
-    summary.innerHTML = Object.entries(cookieStats).map(([name, stats]) => `
+    summary.innerHTML = Object.entries(cookieStats).map(([name, stats]) => {
+        const starDisplay = stats.star_level !== undefined ? `⭐${stats.star_level} • ` : '';
+        return `
         <div class="stats-summary-item">
             <div class="stats-summary-info">
                 <div class="stats-summary-name">${name}</div>
                 <div class="stats-summary-details">
-                    Lv${stats.cookie_level} • Skill ${stats.skill_level} • ${stats.toppings.length} Toppings
+                    ${starDisplay}Lv${stats.cookie_level} • Skill ${stats.skill_level} • ${stats.toppings.length} Toppings
                 </div>
             </div>
             <button class="btn-edit-stats" onclick="editCookieStats('${name.replace(/'/g, "\\'")}')">Edit</button>
             <button class="btn-delete-stats" onclick="deleteCookieStats('${name.replace(/'/g, "\\'")}')">Delete</button>
         </div>
-    `).join('');
+    `;}).join('');
 }
 
 // Edit existing cookie stats
@@ -918,6 +925,36 @@ function renderCounterTeam(teamData, rank) {
             </div>
 
             ${teamData.synergy && teamData.synergy.total_score ? renderSynergyBreakdown(teamData.synergy) : ''}
+
+            ${teamData.recommendedTreasures && teamData.recommendedTreasures.length > 0 ? renderTreasureRecommendations(teamData.recommendedTreasures) : ''}
+        </div>
+    `;
+}
+
+// Render treasure recommendations for counter-team
+function renderTreasureRecommendations(treasures) {
+    return `
+        <div class="treasure-recommendations">
+            <h5>🎁 Recommended Treasures</h5>
+            <div class="treasures-list">
+                ${treasures.map(treasure => `
+                    <div class="treasure-card">
+                        <div class="treasure-header">
+                            <span class="treasure-name">${treasure.name}</span>
+                            <span class="treasure-tier tier-${treasure.tier.toLowerCase().replace('+', 'plus')}">${treasure.tier}</span>
+                        </div>
+                        <p class="treasure-reason">${treasure.reason}</p>
+                        <div class="treasure-effects">
+                            ${treasure.effects.atk_boost > 0 ? `<span class="effect-badge">ATK +${treasure.effects.atk_boost}%</span>` : ''}
+                            ${treasure.effects.crit_boost > 0 ? `<span class="effect-badge">CRIT +${treasure.effects.crit_boost}%</span>` : ''}
+                            ${treasure.effects.cooldown_reduction > 0 ? `<span class="effect-badge">CDR -${treasure.effects.cooldown_reduction}%</span>` : ''}
+                            ${treasure.effects.dmg_resist > 0 ? `<span class="effect-badge">DMG Resist +${treasure.effects.dmg_resist}%</span>` : ''}
+                            ${treasure.effects.hp_shield > 0 ? `<span class="effect-badge">Shield +${treasure.effects.hp_shield}%</span>` : ''}
+                            ${treasure.effects.heal > 0 ? `<span class="effect-badge">Heal +${treasure.effects.heal}%</span>` : ''}
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
         </div>
     `;
 }

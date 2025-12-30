@@ -1,0 +1,178 @@
+cookie_name,skill_name,skill_type,crowd_control,grants_immunity,provides_healing,provides_shield,anti_heal,anti_tank,dispel,target_type,key_mechanic
+Mystic Flour Cookie,Smite the Heretics,Control,Silence,All_Debuffs,False,True,True,False,False,AoE,Silence enemies and grant team debuff immunity
+Burning Spice Cookie,World of Destruction,Damage,None,None,False,False,False,True,False,AoE,True damage ignoring DEF and DMG Resist
+Shadow Milk Cookie,Curtain Call,Control,Stun,None,False,False,False,True,False,AoE,Mass stun and DEF reduction
+Eternal Sugar Cookie,Sweet Dreams,Control,Sleep,All_Debuffs,True,True,False,False,False,Team_Wide,Sleep enemies and heal team with immunity
+Silent Salt Cookie,Silent Judgement,Damage,None,None,False,True,False,True,False,AoE,True damage with shield and critical strikes
+Pure Vanilla Cookie,Radiant Light of Resolution,Healing,None,All_Debuffs,True,True,False,False,True,Team_Wide,Mass heal with debuff immunity and cleanse
+Hollyberry Cookie,Hollyberry's Grand Entrance,Defense,Stun,Stun,False,True,False,False,False,AoE,AoE stun with team shield and self HP boost
+Dark Cacao Cookie,Grapejam Chocoblade,Damage,None,Interruption,False,True,False,True,False,AoE,DEF-ignoring damage with shield
+Golden Cheese Cookie,Radiant Glory of Gold and Glory,Damage,None,None,False,False,False,True,False,AoE,Multi-hit DEF-scaling damage
+White Lily Cookie,The Final Verdict,Damage,Stun,None,False,False,False,True,False,AoE,Mass AoE damage with stun
+Pure Vanilla Cookie,Awakened Light of Unwavering Resolution,Healing,None,All_Debuffs,True,True,False,False,True,Team_Wide,Enhanced heal with immunity and mass cleanse
+Hollyberry Cookie,Awakened Grand Entrance,Defense,Stun,All_Debuffs,False,True,False,False,False,AoE,Enhanced stun with debuff immunity shield
+Dark Cacao Cookie,Awakened Grapejam Chocoblade,Damage,None,All_Debuffs,False,True,False,True,False,AoE,True damage with immunity shield
+Golden Cheese Cookie,Awakened Radiant Glory,Damage,None,None,False,True,False,True,False,AoE,Enhanced DEF-scaling with lifesteal shield
+White Lily Cookie,Awakened Final Verdict,Damage,Stun,None,False,False,False,True,False,AoE,Massive AoE with extended stun
+Fire Spirit Cookie,Burning Soul,Damage,None,None,False,False,False,False,False,AoE,Continuous fire damage over time
+Wind Archer,Divine Grace of the Millennial Forest,Damage,None,None,True,False,False,False,False,AoE,AoE damage with team healing
+Stormbringer Cookie,Thunder's Domain,Damage,None,Stun,False,False,False,True,False,AoE,Lightning strikes with HP-scaling damage
+Moonlight Cookie,Moonlight of Absolution,Damage,Stun,None,False,False,False,False,False,AoE,AoE stun damage with CRIT DMG boost
+Black Pearl Cookie,Abyss Depths,Damage,None,None,False,False,False,True,False,AoE,HP-based true damage with mark mechanic
+Frost Queen Cookie,Freezing Squall,Control,Freeze,None,False,False,False,False,False,AoE,Mass freeze with continuous damage
+Sea Fairy Cookie,Ocean's Majesty,Control,Stun,None,False,False,False,False,False,AoE,AoE knockback stun with high damage
+Millennial Tree Cookie,Nature's Blessing,Healing,None,None,True,True,False,False,False,Team_Wide,Team heal with shield and HP% recovery
+Pitaya Dragon Cookie,Dragon's Rage,Damage,None,None,False,False,False,True,False,AoE,HP-scaling damage with self-heal
+Doughael,Divine Judgement,Healing,None,None,True,False,False,False,True,Team_Wide,Powerful healing with damage buff
+Camellia Cookie,Scarlet Bloom,Damage,None,Interruption,False,True,False,True,False,AoE,HP-scaling damage with shield
+Elder Faerie Cookie,Ancient Guardian,Defense,None,All_Debuffs,False,True,False,False,True,Team_Wide,Team shield with immunity and cleanse
+Crimson Coral Cookie,Tidal Guardian,Defense,None,Stun,True,True,False,False,False,Team_Wide,Shield and heal with stun immunity
+Shining Glitter Cookie,Starlight Spectacle,Damage,None,None,False,False,False,False,False,AoE,Multi-hit magic damage with CRIT boost
+Capsaicin Cookie,Scorching Heat,Damage,None,None,False,False,False,False,False,AoE,Fire damage with ATK boost stacking
+Stardust Cookie,Celestial Strike,Damage,None,None,False,False,False,True,False,AoE,High critical damage with defense penetration
+Sherbet Cookie,Frozen Arrows,Damage,Slow,None,False,False,False,False,False,AoE,Multi-hit damage with slow effect
+Oyster Cookie,Pearl's Blessing,Support,None,None,True,True,False,False,False,Team_Wide,Team buff with healing and shield
+Clotted Cream Cookie,For My Kingdom,Damage,None,None,False,True,False,False,False,AoE,High damage with summoning shield
+Captain Caviar Cookie,Cannonball Barrage,Damage,Knockback,None,False,False,False,False,False,AoE,Knockback with continuous cannon fire
+Cream Unicorn Cookie,Rainbow Cloud,Healing,None,None,True,False,False,False,True,Team_Wide,Strong healing with debuff cleanse
+Financier Cookie,Divine Shield,Defense,None,Stun,False,True,False,False,False,Team_Wide,Team shield with stun immunity
+Crunchy Chip Cookie,Ice Wolves Assault,Damage,None,None,False,False,False,False,False,AoE,Summon wolves with freezing attacks
+Wildberry Cookie,Heroic Protection,Defense,None,None,False,True,False,False,False,Single_Target,Bodyguard mode with damage reduction
+Cherry Blossom Cookie,Petal Dance,Damage,Stun,None,False,False,False,False,False,AoE,AoE stun with cherry blossom petals
+Caramel Arrow Cookie,Arrow of Justice,Damage,None,None,False,False,False,True,False,Single_Target,HP-scaling single target nuke
+Affogato Cookie,Bitter Truth,Debuff,None,None,False,False,True,False,False,AoE,DEF reduction with healing reduction
+Tea Knight Cookie,Righteous Charge,Damage,None,None,False,False,False,False,False,AoE,Charge attack with damage boost
+Éclair Cookie,Truth Unveiled,Debuff,None,None,False,False,False,True,False,AoE,DEF reduction with amplify damage taken
+Cocoa Cookie,Warm Comfort,Defense,None,Stun,False,True,False,False,False,Team_Wide,Team shield with stun immunity
+Cotton Cookie,Eager Sheep,Healing,None,None,True,False,False,False,False,Team_Wide,Heal with ATK buff and sheep summons
+Pumpkin Pie Cookie,Pompon Smash,Damage,None,None,False,False,False,False,False,AoE,Summon Pompon for continuous damage
+Twizzly Gummy Cookie,Electric Shock,Damage,Stun,None,False,False,False,False,False,AoE,Lightning damage with stun
+Mala Sauce Cookie,Dragon's Flame,Damage,None,None,False,False,False,False,False,AoE,Fire damage with ATK speed boost
+Moon Rabbit Cookie,Rice Cake Barrage,Defense,Stun,None,False,False,False,False,False,AoE,Stun with damage reduction buff
+Raspberry Cookie,Royal Decree,Damage,None,None,False,False,False,False,False,Single_Target,High single target damage
+Parfait Cookie,Healing Melody,Healing,None,None,True,False,False,False,True,Team_Wide,Healing with debuff cleanse
+Sorbet Shark Cookie,Shark Torpedo,Damage,None,None,False,False,False,False,False,AoE,High burst damage with dodge
+Squid Ink Cookie,Ink Splash,Damage,Stun,None,False,False,False,False,False,AoE,AoE stun with damage
+Lilac Cookie,Silent Judgment,Support,Silence,None,False,False,False,False,False,AoE,Silence with CRIT buff
+Mango Cookie,Tropical Wave,Damage,None,None,False,False,False,False,False,AoE,Wave damage with knockback
+Red Velvet Cookie,Hound Assault,Damage,None,None,False,False,False,False,False,AoE,Summon hounds for damage
+Pastry Cookie,Divine Arrows,Damage,None,None,False,False,False,False,False,AoE,Multi-hit arrow barrage
+Fig Cookie,Sweet Support,Support,None,None,True,False,False,False,False,Team_Wide,Heal with damage buff
+Strawberry Crepe Cookie,Shield Bash,Defense,Stun,None,False,True,False,False,False,AoE,Stun with team shield
+Black Raisin Cookie,Shadow Raid,Damage,None,None,False,False,False,False,False,AoE,Crow swarm damage
+Almond Cookie,Handcuff Restraint,Support,None,None,False,False,False,False,False,AoE,DEF buff with damage reduction
+Cream Puff Cookie,Magical Shield,Defense,None,None,False,True,False,False,False,Team_Wide,Team shield with ATK buff
+Latte Cookie,Coffee Magic,Damage,None,None,False,False,False,False,False,AoE,AoE magic damage
+Kumiho Cookie,Fox Spirit,Damage,Charm,None,False,False,False,False,False,AoE,Charm with damage
+Rye Cookie,Sharpshooting,Damage,None,None,False,False,False,False,False,Single_Target,High single target damage
+Espresso Cookie,Coffee Tornado,Damage,None,None,False,False,False,False,False,AoE,Continuous magic damage
+Madeleine Cookie,Divine Protection,Defense,None,None,True,True,False,False,False,Team_Wide,Shield with healing
+Licorice Cookie,Servant Summon,Damage,None,None,False,False,False,False,False,AoE,Summon servants with damage reduction
+Poison Mushroom Cookie,Shroomie Boom,Damage,None,None,False,False,False,False,False,AoE,Poison damage over time
+Milk Cookie,Shield Charge,Defense,Stun,None,False,True,False,False,False,AoE,Stun with shield
+Purple Yam Cookie,Rage Smash,Damage,None,None,False,False,False,False,False,AoE,Berserker mode damage
+Pomegranate Cookie,Dark Blessing,Support,None,None,True,False,False,False,False,Team_Wide,Heal with ATK buff
+Chili Pepper Cookie,Quick Strike,Damage,None,None,False,False,False,False,False,Single_Target,High burst single target damage
+Sparkling Cookie,Celebratory Toast,Healing,None,None,True,False,False,False,False,Team_Wide,Heal with CRIT buff
+Dark Choco Cookie,Shadow Blade,Damage,None,None,False,False,False,True,False,AoE,DEF reduction with damage
+Herb Cookie,Soothing Herbs,Healing,None,None,True,False,False,False,False,Team_Wide,Continuous healing over time
+Mint Choco Cookie,Violin Concerto,Support,None,None,False,False,False,False,False,Team_Wide,ATK speed buff
+Werewolf Cookie,Primal Rage,Damage,None,None,False,False,False,False,False,AoE,Transform with damage boost
+Tiger Lily Cookie,Wild Assault,Damage,Stun,None,False,False,False,False,False,AoE,Stun with damage
+Vampire Cookie,Blood Drain,Damage,None,None,True,False,False,True,False,Single_Target,HP-based damage with lifesteal
+Snow Sugar Cookie,Frost Shield,Defense,Freeze,None,False,True,False,False,False,Team_Wide,Shield with freeze chance
+Salt Cellar Cookie,Salt Wall,Defense,None,None,False,True,False,False,False,Team_Wide,Team shield with DMG reduction
+Charcoal Cookie,Dark Fire,Damage,None,None,False,False,False,False,False,AoE,Fire damage over time
+Menthol Cookie,Cooling Blast,Damage,Slow,None,False,False,False,False,False,AoE,Ice damage with slow
+Seltzer Cookie,Bubble Support,Support,None,None,True,False,False,False,False,Team_Wide,Heal with ATK speed buff
+Grapefruit Cookie,Electric Charge,Damage,None,None,False,False,False,False,False,AoE,Lightning damage with charge
+Lime Cookie,Refresh,Support,None,None,True,False,False,False,True,Team_Wide,Heal with debuff cleanse
+Manju Cookie,Steam Strike,Damage,None,None,False,False,False,False,False,AoE,Steam damage with knockback
+Jagae Cookie,Guardian Stance,Defense,None,None,False,True,False,False,False,Team_Wide,Team shield with taunt
+Orange Cookie,Citrus Burst,Damage,None,None,False,False,False,False,False,AoE,AoE magic damage
+Lemon Cookie,Sour Strike,Damage,None,None,False,False,False,False,False,AoE,Lightning damage
+Cream Soda Cookie,Fizzy Charge,Damage,None,None,False,False,False,False,False,AoE,Charge attack with knockback
+Sugarfly Cookie,Sweet Support,Support,None,None,False,False,False,False,False,Team_Wide,ATK buff with damage boost
+Pavlova Cookie,Whipped Shot,Damage,None,None,False,False,False,False,False,AoE,Multi-hit ranged damage
+Agar Agar Cookie,Jelly Strike,Damage,None,None,False,False,False,False,False,AoE,Ambush damage
+Wedding Cake Cookie,Blessed Union,Support,None,None,True,True,False,False,False,Team_Wide,Heal with shield buff
+Black Forest Cookie,Forest Charge,Damage,None,None,False,False,False,False,False,AoE,Charge attack with damage
+Black Sapphire Cookie,Poison Veil,Debuff,None,None,False,False,False,False,False,AoE,Poison with DEF reduction
+Candy Apple Cookie,Sugar Bomb,Damage,None,None,False,False,False,False,False,AoE,AoE bomb damage
+Okchun Cookie,Spring Healing,Healing,None,None,True,False,False,False,False,Team_Wide,Healing with HP recovery
+Green Tea Mousse Cookie,Foam Shield,Defense,None,None,False,True,False,False,False,Team_Wide,Team shield with wind element
+Pudding a la Mode Cookie,Sweet Bomb,Damage,None,None,False,False,False,False,False,AoE,AoE bomb damage
+Choco Drizzle Cookie,Shadow Strike,Damage,None,None,False,False,False,False,False,AoE,Darkness ambush damage
+Red Osmanthus Cookie,Petal Shot,Damage,None,None,False,False,False,False,False,AoE,Multi-hit ranged damage
+Golden Osmanthus Cookie,Golden Bloom,Damage,None,None,False,False,False,False,False,AoE,AoE bomb with flower petals
+Smoked Cheese Cookie,Smoke Screen,Damage,None,None,False,False,False,False,False,AoE,Magic damage with smoke effect
+Nutmeg Tiger Cookie,Tiger's Blessing,Support,None,None,False,False,False,False,False,Team_Wide,ATK buff with fire element
+Star Coral Cookie,Coral Blessing,Support,None,None,True,False,False,False,False,Team_Wide,Heal with support buff
+Peach Blossom Cookie,Blossom Dance,Support,None,None,True,False,False,False,False,Team_Wide,Heal with buff
+Cloud Haetae Cookie,Cloud Guardian,Defense,None,None,False,True,False,False,False,Team_Wide,Team shield with protection
+Street Urchin Cookie,Fire Bomb,Damage,None,None,False,False,False,False,False,AoE,Fire bomb damage
+Caramel Choux Cookie,Sweet Support,Support,None,None,False,False,False,False,False,Team_Wide,Buff with support effect
+Butter Roll Cookie,Rolling Charge,Damage,None,None,False,False,False,False,False,AoE,Charge attack damage
+Matcha Cookie,Tea Ceremony,Damage,None,None,False,False,False,False,False,AoE,Poison magic damage
+Mercurial Knight Cookie,Knight's Charge,Damage,None,None,False,False,False,False,False,AoE,Steel charge attack
+Silverbell Cookie,Bell's Blessing,Support,None,None,True,False,False,False,False,Team_Wide,Heal with grass support
+Rebel Cookie,Rebel Strike,Damage,None,None,False,False,False,False,False,AoE,Wind ambush damage
+Crème Brulee Cookie,Flame Shot,Damage,None,None,False,False,False,False,False,AoE,Fire ranged damage
+Linzer Cookie,Cookie Support,Support,None,None,True,False,False,False,False,Team_Wide,Heal with support buff
+Olive Cookie,Oil Blessing,Support,None,None,False,False,False,False,False,Team_Wide,ATK buff with fire element
+Mozzarella Cookie,Cheese Magic,Damage,None,None,False,False,False,False,False,AoE,Earth magic damage
+Fettuccine Cookie,Pasta Shield,Defense,None,None,False,True,False,False,False,Team_Wide,Earth shield with protection
+Burnt Cheese Cookie,Burnt Charge,Damage,None,None,False,False,False,False,False,AoE,Earth charge attack
+Frilled Jellyfish Cookie,Jellyfish Support,Support,None,None,True,False,False,False,False,Team_Wide,Water heal with support
+Peppermint Cookie,Mint Refresh,Support,None,None,True,False,False,False,False,Team_Wide,Water heal with cleanse
+Black Lemonade Cookie,Electric Bomb,Damage,None,None,False,False,False,False,False,AoE,Electric bomb damage
+Rockstar Cookie,Rock Healing,Healing,None,None,True,False,False,False,False,Team_Wide,Healing with music buff
+Tarte Tatin Cookie,Apple Shot,Damage,None,None,False,False,False,False,False,AoE,Fire ranged damage
+Royal Margarine Cookie,Royal Strike,Damage,None,None,False,False,False,False,False,AoE,Poison ambush damage
+Kouign-Amann Cookie,Light Shield,Defense,None,None,False,True,False,False,False,Team_Wide,Light shield with protection
+Prune Juice Cookie,Prune Bomb,Damage,None,None,False,False,False,False,False,AoE,Poison bomb damage
+Space Doughnut,Space Charge,Damage,None,None,False,False,False,False,False,AoE,Charge attack in space
+Blueberry Pie Cookie,Berry Magic,Damage,None,None,False,False,False,False,False,AoE,Electric magic damage
+Milky Way Cookie,Galaxy Charge,Damage,None,None,False,False,False,False,False,AoE,Cosmic charge attack
+Prophet Cookie,Prophecy,Support,None,None,False,False,False,False,False,Team_Wide,Support with foresight buff
+Pinecone Cookie,Ice Bomb,Damage,None,None,False,False,False,False,False,AoE,Ice bomb damage
+Carol Cookie,Christmas Healing,Healing,None,None,True,False,False,False,False,Team_Wide,Grass healing with cheer
+Macaron Cookie,Sweet Magic,Damage,None,None,False,False,False,False,False,AoE,Magic damage with sweetness
+Schwarzwalder,Dark Charge,Damage,None,None,False,False,False,False,False,AoE,Steel charge attack
+Candy Diver Cookie,Dive Support,Support,None,None,True,False,False,False,False,Team_Wide,Support with underwater buff
+GingerBrave,Brave Slash,Damage,None,None,False,False,False,False,False,AoE,Basic charge attack
+Strawberry Cookie,Berry Shield,Defense,None,None,False,True,False,False,False,Self_Buff,Self shield protection
+Ninja Cookie,Shadow Strike,Damage,None,None,False,False,False,False,False,Single_Target,Quick ninja strike
+Angel Cookie,Angel's Blessing,Healing,None,None,True,False,False,False,False,Team_Wide,Basic team healing
+Muscle Cookie,Muscle Punch,Damage,None,None,False,False,False,False,False,AoE,Steel punch attack
+Wizard Cookie,Magic Bolt,Damage,None,None,False,False,False,False,False,AoE,Electric magic damage
+Beet Cookie,Beet Shot,Damage,None,None,False,False,False,False,False,Single_Target,Basic ranged shot
+Devil Cookie,Dark Curse,Damage,None,None,False,False,False,False,False,AoE,Darkness magic damage
+Custard Cookie III,Custard Heal,Healing,None,None,True,False,False,False,False,Team_Wide,Basic healing spell
+Clover Cookie,Lucky Charm,Support,None,None,False,False,False,False,False,Team_Wide,Luck buff support
+Carrot Cookie,Carrot Support,Support,None,None,True,False,False,False,False,Team_Wide,Grass support heal
+Avocado Cookie,Avocado Shield,Defense,None,None,False,True,False,False,False,Team_Wide,Steel shield protection
+Pancake Cookie,Acorn Bomb,Damage,None,None,False,False,False,False,False,AoE,Acorn ambush damage
+Onion Cookie,Cry,Support,None,None,False,False,False,False,False,AoE,Debuff with crying
+Gumball Cookie,Gumball Bomb,Damage,None,None,False,False,False,False,False,AoE,Bomb explosion damage
+Blackberry Cookie,Berry Magic,Damage,None,None,False,False,False,False,False,AoE,Basic magic damage
+Adventurer Cookie,Adventure Strike,Damage,None,None,False,False,False,False,False,AoE,Ambush exploration damage
+Alchemist Cookie,Potion Toss,Damage,None,None,False,False,False,False,False,AoE,Poison bomb damage
+Cherry Cookie,Cherry Bomb,Damage,None,None,False,False,False,False,False,AoE,Bomb explosion damage
+Knight Cookie,Knight Shield,Defense,None,None,False,True,False,False,False,Self_Buff,Steel self shield
+Princess Cookie,Royal Strike,Damage,None,None,False,False,False,False,False,AoE,Royal charge attack
+Marshmallow Bunny Cookie,Bunny Hop,Support,None,None,True,False,False,False,False,Team_Wide,Support healing hop
+Cream Ferret Cookie,Ferret Play,Support,None,None,True,False,False,False,False,Team_Wide,Playful support heal
+Icicle Yeti Cookie,Ice Heal,Healing,None,None,True,False,False,False,False,Team_Wide,Ice healing ability
+Snapdragon Cookie,Dragon Support,Support,None,None,False,False,False,False,False,Team_Wide,Support with dragon buff
+Jungkook Cookie,Golden Performance,Damage,None,None,False,False,False,False,False,AoE,BTS performance damage
+V Cookie,Artistic Performance,Damage,None,None,False,False,False,False,False,AoE,BTS artistic damage
+Jimin Cookie,Graceful Performance,Support,None,None,True,False,False,False,False,Team_Wide,BTS healing performance
+j-hope Cookie,Hopeful Performance,Support,None,None,False,False,False,False,False,Team_Wide,BTS buff performance
+SUGA Cookie,Swag Performance,Damage,None,None,False,False,False,False,False,AoE,BTS swag damage
+Jin Cookie,Worldwide Performance,Support,None,None,False,False,False,False,False,Team_Wide,BTS support performance
+RM Cookie,Leadership Performance,Support,None,None,False,False,False,False,False,Team_Wide,BTS leadership buff
+Tails Cookie,Spin Attack,Damage,None,None,False,False,False,False,False,AoE,Sonic spin ambush
+Sonic Cookie,Speed Strike,Damage,None,None,False,False,False,False,False,AoE,Sonic speed ambush
+Glinda Cookie,Good Magic,Support,None,None,True,False,False,False,False,Team_Wide,Wicked good magic support
+Elphaba Cookie,Defying Gravity,Damage,None,None,False,False,False,False,False,AoE,Wicked powerful magic

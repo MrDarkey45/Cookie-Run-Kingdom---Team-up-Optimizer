@@ -1,0 +1,22 @@
+treasure_name,rarity,activation_type,tier_ranking,effect_category,primary_effect,atk_boost_max,crit_boost_max,cooldown_reduction_max,dmg_resist_max,hp_shield_max,heal_max,revive,debuff_cleanse,enemy_debuff,summon_boost,recommended_archetypes,cooldown_seconds,special_condition
+Old Pilgrim's Scroll,Epic,Passive,S+,Offensive,Increases ATK for all Cookies,60,0,0,0,0,0,False,False,False,False,Universal|DPS|Burst,0,None
+Squishy Jelly Watch,Common,Passive,S+,Offensive,Reduces skill cooldown for all Cookies,0,0,25,0,0,0,False,False,False,False,Universal|DPS|Support,0,None
+Dream Conductor's Whistle,Epic,Passive,S+,Hybrid,Grants CRIT% and buffs to 2 highest ATK Cookies,40,15,0,20,0,30,False,False,False,False,Universal|DPS,0,Heals on buffed cookie death
+Sugar Swan's Shining Feather,Epic,Passive,S,Defensive,Revives first fallen Cookie with skill cooldown reset,0,0,0,0,0,0,True,False,False,False,Arena|Revival,0,Once per battle only
+Seamstress's Pin Cushion,Epic,Active,A,Offensive,Increases summon ATK and duration,0,0,0,0,0,0,False,False,True,True,Summoner,10,Useless without summoners
+Hollyberrian Royal Necklace,Epic,Active,A,Defensive,Grants HP Shield and DMG Resist with Curse Protection,0,0,0,5,15,0,False,False,False,False,Tank|Sustain,8,Shield stacks 5% per use
+Grim-looking Scythe,Rare,Passive,A,Offensive,Raises CRIT% of all Cookies,0,30,0,0,0,0,False,False,False,False,DPS|Burst,0,None
+Mysterious Jewelry Box,Epic,Active,A,Offensive,Deals AoE damage and stuns enemies with irremovable debuffs,0,0,0,0,0,0,False,False,True,False,Burst|CC,12,Damage scales with highest ATK
+Cursed Catacombs Candle,Epic,Active,A,Utility,Silences enemies and applies debuffs after Silence ends,0,0,0,0,0,0,False,False,True,False,PvE|Control,11,New 2025 treasure
+Unyielding Berry Necklace,Epic,Active,A,Offensive,Buffs ATK CRIT% and knockback resistance,15,10,0,0,0,0,False,False,False,False,Sustain|DPS,9,Buffs stack
+Sacred Pomegranate Branch,Epic,Active,B,Defensive,Grants HP Shield to all Cookies,0,0,0,0,15,0,False,False,False,False,Tank|Sustain,10,None
+Explorer's Monocle,Epic,Active,B,Defensive,Restores HP cleanses debuffs and increases DEF,0,0,0,0,0,25,False,True,False,False,Sustain|Tank,12,None
+Bookseller's Monocle,Epic,Active,B,Defensive,Restores HP and cleanses debuffs,0,0,0,0,0,30,False,True,False,False,Sustain|Healer,11,None
+Miraculous Natural Remedy,Epic,Active,B,Defensive,Heals highest Max HP Cookie and cleanses debuffs,0,0,0,0,0,16,False,True,False,False,Tank|Sustain,10,Targets highest Max HP
+Ice-cold Energy Drink,Epic,Active,B,Defensive,Heals lowest HP Cookie and grants Giant transformation,0,0,0,0,0,15,False,False,False,False,Sustain,13,Giant +20% Max HP
+Holiday Gift Box,Epic,Active,B,Defensive,Heals and grants Giant transformation with ATK boost,15,0,0,0,0,20,False,False,False,False,Sustain|DPS,14,Giant +15% ATK
+Wind Pursuer's Aura,Epic,Passive,B,Defensive,Grants HP Shield at battle start,0,0,0,0,25,0,False,False,False,False,Tank,0,Battle start only
+Bear Jelly's Lollipop,Common,Passive,B,Offensive,Increases ATK of highest ATK Cookie,20,0,0,0,0,0,False,False,False,False,DPS,0,Single target buff
+Pilgrim's Slingshot,Rare,Active,B,Offensive,Reduces rear enemy DEF for 3 seconds,0,0,0,0,0,0,False,False,True,False,Boss|Guild,8,Targets rear enemies
+Thunder God's Paper Charm,Epic,Active,C,Offensive,Deals Electricity damage and removes enemy buffs,0,0,0,0,0,0,False,False,True,False,Utility,15,Dispels enemy buffs
+Sleepyhead's Jelly Watch,Common,Passive,C,Offensive,Reduces cooldown and adds 1% damage,0,0,15,0,0,0,False,False,False,False,DPS,0,Inferior to Squishy Watch

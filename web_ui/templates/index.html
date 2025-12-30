@@ -45,6 +45,15 @@
                     <input type="number" id="topN" class="input-field" value="5" min="1" max="50">
                     <small class="help-text">Number of top teams to display</small>
                 </div>
+
+                <!-- Exclude Ascended Cookies -->
+                <div class="setting-group">
+                    <label class="checkbox-setting-label">
+                        <input type="checkbox" id="excludeAscended">
+                        <span>Exclude Ascended Cookies</span>
+                    </label>
+                    <small class="help-text">Hide Ascended versions from lists and optimization</small>
+                </div>
             </div>
 
             <!-- Required Cookies Section (Redesigned) -->
@@ -94,6 +103,71 @@
             </div>
 
             <div id="teamsList" class="teams-list"></div>
+        </div>
+
+        <!-- Counter-Team Generator Section -->
+        <div class="counter-team-panel">
+            <h3>⚔️ Counter-Team Generator</h3>
+            <p class="subtitle">Analyze enemy teams and generate optimal counter strategies</p>
+
+            <!-- Enemy Team Input -->
+            <div class="enemy-team-section">
+                <h4>🎯 Enemy Team (5 Cookies Required)</h4>
+                <p class="help-text">Select the enemy team composition you want to counter</p>
+
+                <!-- Enemy Selected Cookies Display -->
+                <div id="enemySelectedCookies" class="selected-cookies">
+                    <p class="no-selection">No enemy cookies selected</p>
+                </div>
+
+                <!-- Enemy Search Bar -->
+                <input type="text" id="enemyCookieSearch" class="search-input" placeholder="🔍 Search enemy cookies to add...">
+
+                <!-- Enemy Scrollable Cookie List -->
+                <div id="enemyCookieList" class="cookie-list-scrollable"></div>
+            </div>
+
+            <!-- Counter Options -->
+            <div class="counter-options-grid">
+                <div class="setting-group">
+                    <label for="counterMethod">Counter Method</label>
+                    <select id="counterMethod" class="input-field">
+                        <option value="random" selected>Random Sampling (Fast)</option>
+                        <option value="greedy">Greedy Algorithm (Counter-focused)</option>
+                        <option value="genetic">Genetic Algorithm (Best)</option>
+                    </select>
+                </div>
+
+                <div class="setting-group">
+                    <label for="numCounterTeams">Counter Teams to Show</label>
+                    <input type="number" id="numCounterTeams" class="input-field" value="5" min="1" max="20">
+                </div>
+            </div>
+
+            <!-- Generate Counter Button -->
+            <button id="generateCounterBtn" class="btn-primary">
+                ⚔️ Generate Counter-Teams
+            </button>
+        </div>
+
+        <!-- Counter Results Section -->
+        <div id="counterResultsSection" class="results-section" style="display: none;">
+            <div class="results-header">
+                <h3>⚔️ Counter-Team Analysis</h3>
+                <div id="counterResultsStats" class="results-stats"></div>
+            </div>
+
+            <!-- Enemy Analysis -->
+            <div id="enemyAnalysis" class="enemy-analysis-section"></div>
+
+            <!-- Weaknesses Found -->
+            <div id="weaknessesSection" class="weaknesses-section"></div>
+
+            <!-- Counter Strategy -->
+            <div id="counterStrategySection" class="counter-strategy-section"></div>
+
+            <!-- Counter Teams List -->
+            <div id="counterTeamsList" class="teams-list"></div>
         </div>
 
         <!-- Statistics Panel -->
@@ -151,6 +225,14 @@
                             </div>
                             <button type="button" onclick="addToppingSlot()" class="btn-add-topping">+ Add Topping</button>
                         </div>
+                    </div>
+
+                    <!-- Add to Required Cookies Checkbox -->
+                    <div class="form-checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="addToRequired" checked>
+                            <span>☑ Also add to Required Cookies</span>
+                        </label>
                     </div>
 
                     <div class="modal-actions">

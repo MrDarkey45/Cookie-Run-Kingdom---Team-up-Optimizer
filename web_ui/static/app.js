@@ -29,6 +29,24 @@ function setupEventListeners() {
     document.getElementById('method').addEventListener('change', updateMethodHelp);
     document.getElementById('addStatsBtn').addEventListener('click', openCookieStatsModal);
     document.getElementById('modalCookieSearch').addEventListener('input', handleModalSearch);
+    document.getElementById('excludeAscended').addEventListener('change', handleExcludeAscendedChange);
+
+    // Counter-team generator listeners
+    document.getElementById('generateCounterBtn').addEventListener('click', generateCounterTeams);
+    document.getElementById('enemyCookieSearch').addEventListener('input', filterEnemyCookies);
+}
+
+// Handle exclude ascended checkbox change
+function handleExcludeAscendedChange() {
+    // Refresh the cookie list to filter out Ascended cookies
+    filterCookies({ target: document.getElementById('cookieSearch') });
+
+    // Remove any Ascended cookies from selected cookies
+    const excludeAscended = document.getElementById('excludeAscended').checked;
+    if (excludeAscended) {
+        selectedCookies = selectedCookies.filter(c => !c.rarity.includes('Ascended'));
+        updateSelectedCookies();
+    }
 }
 
 // Load all available cookies
@@ -37,6 +55,7 @@ async function loadCookies() {
         const response = await fetch('/api/cookies');
         allCookies = await response.json();
         displayCookieList(allCookies);
+        displayEnemyCookieList(allCookies); // Also populate enemy cookie list
     } catch (error) {
         console.error('Error loading cookies:', error);
     }
@@ -49,13 +68,20 @@ function displayCookieList(cookies) {
 
     cookies.forEach(cookie => {
         const cookieItem = document.createElement('div');
-        cookieItem.className = 'cookie-item';
+
+        // Check if cookie has stats
+        const hasStats = cookieStats[cookie.name] !== undefined;
+        cookieItem.className = hasStats ? 'cookie-item has-stats' : 'cookie-item';
 
         // Get element display
         const elementDisplay = cookie.element && cookie.element !== 'N/A' ?
             `• ${cookie.element}` : '';
 
+        // Stats badge if stats exist
+        const statsBadge = hasStats ? '<div class="stats-badge">⚡ STATS</div>' : '';
+
         cookieItem.innerHTML = `
+            ${statsBadge}
             <div class="cookie-info">
                 <div class="cookie-rarity-badge" style="background-color: ${cookie.color}"></div>
                 <div>
@@ -63,8 +89,11 @@ function displayCookieList(cookies) {
                     <div class="cookie-meta">${cookie.role} • ${cookie.position} ${elementDisplay}</div>
                 </div>
             </div>
-            <button class="btn-add" onclick="toggleCookie('${cookie.name.replace(/'/g, "\\'")}')">+</button>
+            <button class="btn-add" onclick="event.stopPropagation(); toggleCookie('${cookie.name.replace(/'/g, "\\'")}')">+</button>
         `;
+
+        // Make entire cookie item clickable
+        cookieItem.addEventListener('click', () => toggleCookie(cookie.name));
 
         cookieList.appendChild(cookieItem);
     });
@@ -73,12 +102,20 @@ function displayCookieList(cookies) {
 // Filter cookies based on search
 function filterCookies(event) {
     const searchTerm = event.target.value.toLowerCase();
-    const filtered = allCookies.filter(cookie =>
+    const excludeAscended = document.getElementById('excludeAscended').checked;
+
+    let filtered = allCookies.filter(cookie =>
         cookie.name.toLowerCase().includes(searchTerm) ||
         cookie.role.toLowerCase().includes(searchTerm) ||
         cookie.position.toLowerCase().includes(searchTerm) ||
         (cookie.element && cookie.element.toLowerCase().includes(searchTerm))
     );
+
+    // Filter out Ascended cookies if checkbox is checked
+    if (excludeAscended) {
+        filtered = filtered.filter(cookie => !cookie.rarity.includes('Ascended'));
+    }
+
     displayCookieList(filtered);
 }
 
@@ -168,6 +205,7 @@ function resetStatsForm() {
 function handleModalSearch(event) {
     const searchTerm = event.target.value.toLowerCase();
     const resultsContainer = document.getElementById('cookieSearchResults');
+    const excludeAscended = document.getElementById('excludeAscended').checked;
 
     if (searchTerm.length === 0) {
         resultsContainer.innerHTML = '';
@@ -175,11 +213,18 @@ function handleModalSearch(event) {
         return;
     }
 
-    const filtered = allCookies.filter(cookie =>
+    let filtered = allCookies.filter(cookie =>
         cookie.name.toLowerCase().includes(searchTerm) ||
         cookie.role.toLowerCase().includes(searchTerm) ||
         cookie.rarity.toLowerCase().includes(searchTerm)
-    ).slice(0, 10); // Limit to 10 results
+    );
+
+    // Filter out Ascended cookies if checkbox is checked
+    if (excludeAscended) {
+        filtered = filtered.filter(cookie => !cookie.rarity.includes('Ascended'));
+    }
+
+    filtered = filtered.slice(0, 10); // Limit to 10 results
 
     if (filtered.length === 0) {
         resultsContainer.innerHTML = '<div class="cookie-search-result-item">No cookies found</div>';
@@ -305,6 +350,7 @@ function saveCookieStats() {
 
     const cookieLevel = parseInt(document.getElementById('cookieLevel').value);
     const skillLevel = parseInt(document.getElementById('skillLevel').value);
+    const addToRequired = document.getElementById('addToRequired').checked;
 
     // Calculate average topping quality (0-5 scale) from detailed toppings
     let toppingQuality = 0;
@@ -321,6 +367,21 @@ function saveCookieStats() {
     };
 
     updateStatsSummary();
+
+    // Add to required cookies if checkbox is checked
+    if (addToRequired) {
+        const alreadyRequired = selectedCookies.find(c => c.name === currentEditingCookie.name);
+        if (!alreadyRequired) {
+            if (selectedCookies.length < 5) {
+                selectedCookies.push(currentEditingCookie);
+                updateSelectedCookies();
+            }
+        }
+    }
+
+    // Refresh cookie list to show stats badge
+    filterCookies({ target: document.getElementById('cookieSearch') });
+
     closeCookieStatsModal();
 }
 
@@ -364,6 +425,9 @@ function deleteCookieStats(cookieName) {
     if (confirm(`Delete stats for ${cookieName}?`)) {
         delete cookieStats[cookieName];
         updateStatsSummary();
+
+        // Refresh cookie list to remove stats badge
+        filterCookies({ target: document.getElementById('cookieSearch') });
     }
 }
 
@@ -551,4 +615,309 @@ async function loadStats() {
     } catch (error) {
         console.error('Error loading stats:', error);
     }
+}
+
+// ==============================================
+// COUNTER-TEAM GENERATOR
+// ==============================================
+
+let enemySelectedCookies = [];
+
+// Display enemy cookie list
+function displayEnemyCookieList(cookies) {
+    const cookieList = document.getElementById('enemyCookieList');
+    cookieList.innerHTML = '';
+
+    cookies.forEach(cookie => {
+        const cookieItem = document.createElement('div');
+        cookieItem.className = 'cookie-item';
+
+        const elementDisplay = cookie.element && cookie.element !== 'N/A' ?
+            `• ${cookie.element}` : '';
+
+        cookieItem.innerHTML = `
+            <div class="cookie-info">
+                <div class="cookie-rarity-badge" style="background-color: ${cookie.color}"></div>
+                <div>
+                    <div class="cookie-name">${cookie.name}</div>
+                    <div class="cookie-meta">${cookie.role} • ${cookie.position} ${elementDisplay}</div>
+                </div>
+            </div>
+            <button class="btn-add" onclick="event.stopPropagation(); toggleEnemyCookie('${cookie.name.replace(/'/g, "\\'")}')">+</button>
+        `;
+
+        cookieItem.addEventListener('click', () => toggleEnemyCookie(cookie.name));
+        cookieList.appendChild(cookieItem);
+    });
+}
+
+// Filter enemy cookies based on search
+function filterEnemyCookies(event) {
+    const searchTerm = event.target.value.toLowerCase();
+    const excludeAscended = document.getElementById('excludeAscended').checked;
+
+    let filtered = allCookies.filter(cookie =>
+        cookie.name.toLowerCase().includes(searchTerm) ||
+        cookie.role.toLowerCase().includes(searchTerm) ||
+        cookie.position.toLowerCase().includes(searchTerm) ||
+        (cookie.element && cookie.element.toLowerCase().includes(searchTerm))
+    );
+
+    if (excludeAscended) {
+        filtered = filtered.filter(cookie => !cookie.rarity.includes('Ascended'));
+    }
+
+    displayEnemyCookieList(filtered);
+}
+
+// Toggle enemy cookie selection
+function toggleEnemyCookie(cookieName) {
+    const cookie = allCookies.find(c => c.name === cookieName);
+    if (!cookie) return;
+
+    const index = enemySelectedCookies.findIndex(c => c.name === cookieName);
+
+    if (index > -1) {
+        enemySelectedCookies.splice(index, 1);
+    } else {
+        if (enemySelectedCookies.length < 5) {
+            enemySelectedCookies.push(cookie);
+        } else {
+            alert('Maximum 5 enemy cookies allowed!');
+            return;
+        }
+    }
+
+    updateEnemySelectedCookies();
+}
+
+// Update enemy selected cookies display
+function updateEnemySelectedCookies() {
+    const container = document.getElementById('enemySelectedCookies');
+
+    if (enemySelectedCookies.length === 0) {
+        container.innerHTML = '<p class="no-selection">No enemy cookies selected</p>';
+        return;
+    }
+
+    container.innerHTML = enemySelectedCookies.map(cookie => `
+        <div class="selected-cookie-item">
+            <div class="selected-cookie-info">
+                <div class="cookie-rarity-badge" style="background-color: ${cookie.color}"></div>
+                <span class="cookie-name">${cookie.name}</span>
+            </div>
+            <button class="btn-remove" onclick="toggleEnemyCookie('${cookie.name.replace(/'/g, "\\'")}')">×</button>
+        </div>
+    `).join('');
+}
+
+// Generate counter-teams
+async function generateCounterTeams() {
+    if (enemySelectedCookies.length !== 5) {
+        alert('Please select exactly 5 enemy cookies to generate counter-teams!');
+        return;
+    }
+
+    const method = document.getElementById('counterMethod').value;
+    const numCounterTeams = parseInt(document.getElementById('numCounterTeams').value);
+
+    const counterResultsSection = document.getElementById('counterResultsSection');
+    counterResultsSection.style.display = 'block';
+    counterResultsSection.innerHTML = '<div class="loading-indicator"><div class="spinner"></div><p>Analyzing enemy team and generating counters...</p></div>';
+
+    try {
+        const response = await fetch('/api/counter-teams', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                enemyTeam: enemySelectedCookies.map(c => c.name),
+                numCounterTeams: numCounterTeams,
+                method: method,
+                requiredCookies: []
+            })
+        });
+
+        const data = await response.json();
+
+        if (!data.success) {
+            throw new Error(data.error || 'Failed to generate counter-teams');
+        }
+
+        displayCounterResults(data);
+    } catch (error) {
+        counterResultsSection.innerHTML = `<div class="error-message">❌ Error: ${error.message}</div>`;
+    }
+}
+
+// Display counter-team results
+function displayCounterResults(data) {
+    const counterResultsSection = document.getElementById('counterResultsSection');
+    counterResultsSection.style.display = 'block';
+
+    let html = `
+        <div class="results-header">
+            <h3>⚔️ Counter-Team Analysis</h3>
+            <div class="results-stats">Found ${data.counterTeams.length} counter-teams • ${data.weaknesses.length} weaknesses identified</div>
+        </div>
+
+        <!-- Enemy Team Display -->
+        <div class="enemy-team-display">
+            <h4>🎯 Enemy Team</h4>
+            <div class="cookies-grid">
+                ${enemySelectedCookies.map(cookie => `
+                    <div class="cookie-card">
+                        <div class="cookie-card-header">
+                            <div class="cookie-rarity-badge" style="background-color: ${cookie.color}"></div>
+                            <h4>${cookie.name}</h4>
+                        </div>
+                        <div class="cookie-card-body">
+                            <p><strong>Role:</strong> ${cookie.role}</p>
+                            <p><strong>Position:</strong> ${cookie.position}</p>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+
+        <!-- Enemy Analysis -->
+        <div class="enemy-analysis-section">
+            <h4>📊 Enemy Composition Analysis</h4>
+            <div class="analysis-grid">
+                <div class="analysis-item">
+                    <span class="analysis-label">Healers:</span>
+                    <span class="analysis-value">${data.enemyAnalysis.healers}</span>
+                </div>
+                <div class="analysis-item">
+                    <span class="analysis-label">Tanks:</span>
+                    <span class="analysis-value">${data.enemyAnalysis.tanks}</span>
+                </div>
+                <div class="analysis-item">
+                    <span class="analysis-label">DPS:</span>
+                    <span class="analysis-value">${data.enemyAnalysis.dpsCount}</span>
+                </div>
+                <div class="analysis-item">
+                    <span class="analysis-label">Front:</span>
+                    <span class="analysis-value">${data.enemyAnalysis.frontPosition}</span>
+                </div>
+                <div class="analysis-item">
+                    <span class="analysis-label">Middle:</span>
+                    <span class="analysis-value">${data.enemyAnalysis.middlePosition}</span>
+                </div>
+                <div class="analysis-item">
+                    <span class="analysis-label">Rear:</span>
+                    <span class="analysis-value">${data.enemyAnalysis.rearPosition}</span>
+                </div>
+                ${data.enemyAnalysis.hasShadowMilk ? '<div class="analysis-item critical"><span class="analysis-label">⚠️ Has Shadow Milk!</span></div>' : ''}
+                ${data.enemyAnalysis.beastCookies > 0 ? `<div class="analysis-item"><span class="analysis-label">Beast Cookies:</span><span class="analysis-value">${data.enemyAnalysis.beastCookies}</span></div>` : ''}
+            </div>
+        </div>
+
+        <!-- Weaknesses -->
+        <div class="weaknesses-section">
+            <h4>⚠️ Weaknesses Identified (${data.weaknesses.length})</h4>
+            <div class="weaknesses-list">
+                ${data.weaknesses.map(weakness => `
+                    <div class="weakness-card priority-${weakness.priority.toLowerCase()}">
+                        <div class="weakness-header">
+                            <span class="weakness-title">${weakness.weakness}</span>
+                            <span class="weakness-confidence">${weakness.confidence}% confidence</span>
+                        </div>
+                        <p class="weakness-description">${weakness.description}</p>
+                        <p class="weakness-exploit"><strong>Exploit:</strong> ${weakness.exploit}</p>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+
+        <!-- Counter Strategy -->
+        <div class="counter-strategy-section">
+            <h4>🎯 Recommended Counter Strategy</h4>
+            <div class="strategy-card">
+                <div class="strategy-header">
+                    <span class="strategy-archetype">${data.counterStrategy.teamArchetype}</span>
+                    <span class="strategy-confidence">${data.counterStrategy.confidence}% confidence</span>
+                </div>
+                <p class="strategy-description">${data.counterStrategy.description}</p>
+                ${data.counterStrategy.recommendedCookies.length > 0 ? `
+                    <div class="recommended-cookies">
+                        <strong>Recommended Cookies:</strong>
+                        <div class="cookie-tags">
+                            ${data.counterStrategy.recommendedCookies.slice(0, 10).map(name => `<span class="cookie-tag">${name}</span>`).join('')}
+                        </div>
+                    </div>
+                ` : ''}
+            </div>
+        </div>
+
+        <!-- Counter Teams -->
+        <h4>🏆 Top Counter-Teams</h4>
+        <div class="teams-list">
+            ${data.counterTeams.map((teamData, index) => renderCounterTeam(teamData, index + 1)).join('')}
+        </div>
+    `;
+
+    counterResultsSection.innerHTML = html;
+}
+
+// Render individual counter-team card
+function renderCounterTeam(teamData, rank) {
+    const roleLabels = {
+        'Charge': '🛡️', 'Defense': '🛡️', 'Magic': '✨', 'Healing': '💚',
+        'Support': '🎵', 'Ranged': '🏹', 'Bomber': '💣', 'Ambush': '🗡️'
+    };
+
+    return `
+        <div class="team-card">
+            <div class="team-header">
+                <div class="team-rank">#${rank}</div>
+                <div class="team-scores">
+                    <span class="team-score">Counter: ${teamData.counterScore}/100</span>
+                    <span class="team-score">Team: ${teamData.score}/120</span>
+                    <span class="team-score combined">Combined: ${teamData.combinedScore}/100</span>
+                </div>
+            </div>
+
+            <div class="counter-strategy-tag">${teamData.strategy}</div>
+
+            ${teamData.priorityTargets.length > 0 ? `
+                <div class="priority-targets">
+                    <strong>🎯 Priority Targets:</strong> ${teamData.priorityTargets.join(', ')}
+                </div>
+            ` : ''}
+
+            <div class="cookies-grid">
+                ${teamData.cookies.map(cookie => `
+                    <div class="cookie-card">
+                        <div class="cookie-card-header">
+                            <div class="cookie-rarity-badge" style="background-color: ${cookie.color}"></div>
+                            <h4>${cookie.name}</h4>
+                        </div>
+                        <div class="cookie-card-body">
+                            <p><strong>Role:</strong> ${roleLabels[cookie.role] || ''} ${cookie.role}</p>
+                            <p><strong>Position:</strong> ${cookie.position}</p>
+                            ${cookie.element !== 'N/A' ? `<p><strong>Element:</strong> ${cookie.element}</p>` : ''}
+                            <p><strong>Power:</strong> ${cookie.power}</p>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+
+            <div class="team-stats">
+                <div class="stat-row">
+                    <span class="stat-label">Roles:</span>
+                    <span class="stat-value">${Object.entries(teamData.roleDistribution).map(([role, count]) => `${roleLabels[role] || ''} ${role}: ${count}`).join(', ')}</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Positions:</span>
+                    <span class="stat-value">${Object.entries(teamData.positionDistribution).map(([pos, count]) => `${pos}: ${count}`).join(', ')}</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Weaknesses Exploited:</span>
+                    <span class="stat-value">${teamData.weaknessesExploited}</span>
+                </div>
+            </div>
+
+            ${teamData.synergy && teamData.synergy.total_score ? renderSynergyBreakdown(teamData.synergy) : ''}
+        </div>
+    `;
 }

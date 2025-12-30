@@ -33,6 +33,123 @@ RARITY_WEIGHTS = {
 }
 
 
+class Treasure:
+    """Represents a treasure with buffs and effects for the team."""
+
+    def __init__(
+        self,
+        name: str,
+        rarity: str,
+        activation_type: str,
+        tier_ranking: str,
+        effect_category: str,
+        primary_effect: str,
+        atk_boost_max: float = 0.0,
+        crit_boost_max: float = 0.0,
+        cooldown_reduction_max: float = 0.0,
+        dmg_resist_max: float = 0.0,
+        hp_shield_max: float = 0.0,
+        heal_max: float = 0.0,
+        revive: bool = False,
+        debuff_cleanse: bool = False,
+        enemy_debuff: bool = False,
+        summon_boost: bool = False,
+        recommended_archetypes: Optional[str] = None,
+        cooldown_seconds: float = 0.0,
+        special_condition: Optional[str] = None
+    ):
+        """
+        Initialize a Treasure.
+
+        Args:
+            name: Treasure name
+            rarity: Common, Rare, Epic, Special
+            activation_type: Passive or Active
+            tier_ranking: S+, S, A, B, C
+            effect_category: Offensive, Defensive, Utility, Hybrid
+            primary_effect: Main effect description
+            atk_boost_max: Max ATK% boost (0-100)
+            crit_boost_max: Max CRIT% boost (0-100)
+            cooldown_reduction_max: Max cooldown reduction% (0-100)
+            dmg_resist_max: Max DMG Resist% (0-100)
+            hp_shield_max: Max HP Shield% (0-100)
+            heal_max: Max Heal% (0-100)
+            revive: Whether treasure can revive fallen cookies
+            debuff_cleanse: Whether treasure cleanses debuffs
+            enemy_debuff: Whether treasure applies debuffs to enemies
+            summon_boost: Whether treasure boosts summoned creatures
+            recommended_archetypes: Pipe-separated archetypes (e.g., "DPS|Burst|Tank")
+            cooldown_seconds: Cooldown for active treasures
+            special_condition: Special activation conditions or notes
+        """
+        self.name = name
+        self.rarity = rarity
+        self.activation_type = activation_type
+        self.tier_ranking = tier_ranking
+        self.effect_category = effect_category
+        self.primary_effect = primary_effect
+
+        # Stat bonuses (at max level)
+        self.atk_boost_max = atk_boost_max
+        self.crit_boost_max = crit_boost_max
+        self.cooldown_reduction_max = cooldown_reduction_max
+        self.dmg_resist_max = dmg_resist_max
+        self.hp_shield_max = hp_shield_max
+        self.heal_max = heal_max
+
+        # Special abilities
+        self.revive = revive
+        self.debuff_cleanse = debuff_cleanse
+        self.enemy_debuff = enemy_debuff
+        self.summon_boost = summon_boost
+
+        # Metadata
+        self.recommended_archetypes = recommended_archetypes.split('|') if recommended_archetypes else []
+        self.cooldown_seconds = cooldown_seconds
+        self.special_condition = special_condition if special_condition != 'None' else None
+
+    def get_power_score(self) -> float:
+        """
+        Calculate treasure power score based on effects.
+
+        Returns:
+            float: Power score (0-10, where 10 is maximum utility)
+        """
+        # Tier-based base score
+        tier_scores = {'S+': 10.0, 'S': 8.5, 'A': 7.0, 'B': 5.5, 'C': 4.0}
+        base_score = tier_scores.get(self.tier_ranking, 5.0)
+
+        # Bonus for universal archetypes
+        if 'Universal' in self.recommended_archetypes:
+            base_score += 1.0
+
+        return min(base_score, 10.0)
+
+    def __repr__(self) -> str:
+        return f"Treasure({self.name}, {self.tier_ranking}, {self.effect_category})"
+
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, Treasure):
+            return False
+        return self.name == other.name
+
+    def to_dict(self) -> Dict:
+        """Export treasure as dictionary for JSON serialization."""
+        return {
+            'name': self.name,
+            'rarity': self.rarity,
+            'activation_type': self.activation_type,
+            'tier_ranking': self.tier_ranking,
+            'effect_category': self.effect_category,
+            'primary_effect': self.primary_effect,
+            'atk_boost': self.atk_boost_max,
+            'crit_boost': self.crit_boost_max,
+            'cooldown_reduction': self.cooldown_reduction_max,
+            'power_score': self.get_power_score(),
+            'recommended_archetypes': self.recommended_archetypes
+        }
+
+
 class Cookie:
     """Represents a single cookie with game attributes and optional progression stats."""
 
@@ -45,7 +162,19 @@ class Cookie:
         element: Optional[str] = None,
         cookie_level: Optional[int] = None,
         skill_level: Optional[int] = None,
-        topping_quality: Optional[float] = None
+        topping_quality: Optional[float] = None,
+        # Ability attributes
+        skill_name: Optional[str] = None,
+        skill_type: Optional[str] = None,
+        crowd_control: Optional[str] = None,
+        grants_immunity: Optional[str] = None,
+        provides_healing: bool = False,
+        provides_shield: bool = False,
+        anti_heal: bool = False,
+        anti_tank: bool = False,
+        dispel: bool = False,
+        target_type: Optional[str] = None,
+        key_mechanic: Optional[str] = None
     ):
         """
         Initialize a Cookie instance.
@@ -56,9 +185,20 @@ class Cookie:
             role: Cookie role (Charge, Defense, Magic, Healing, etc.)
             position: Cookie position (Front, Middle, Rear)
             element: Optional cookie element (Fire, Water, Light, etc.)
-            cookie_level: Optional cookie level (1-70) for advanced mode
-            skill_level: Optional skill level (1-60) for advanced mode
+            cookie_level: Optional cookie level (1-90) for advanced mode
+            skill_level: Optional skill level (1-90) for advanced mode
             topping_quality: Optional topping quality rating (0-5) for advanced mode
+            skill_name: Optional skill name
+            skill_type: Optional skill type (Damage, Healing, Buff, etc.)
+            crowd_control: Optional CC type (Stun, Freeze, Silence, None)
+            grants_immunity: Optional immunity type (All_Debuffs, Stun, None)
+            provides_healing: Has healing abilities
+            provides_shield: Has shield abilities
+            anti_heal: Has healing reduction
+            anti_tank: Has HP-based or True damage
+            dispel: Can remove debuffs/buffs
+            target_type: Targeting (AoE, Single_Target, etc.)
+            key_mechanic: Brief ability description
         """
         self.name = name
         self.rarity = rarity
@@ -68,6 +208,19 @@ class Cookie:
         self.cookie_level = cookie_level
         self.skill_level = skill_level
         self.topping_quality = topping_quality
+
+        # Ability attributes
+        self.skill_name = skill_name
+        self.skill_type = skill_type
+        self.crowd_control = crowd_control if crowd_control != 'None' else None
+        self.grants_immunity = grants_immunity if grants_immunity != 'None' else None
+        self.provides_healing = provides_healing
+        self.provides_shield = provides_shield
+        self.anti_heal = anti_heal
+        self.anti_tank = anti_tank
+        self.dispel = dispel
+        self.target_type = target_type
+        self.key_mechanic = key_mechanic
 
     def get_power_score(self) -> float:
         """
@@ -147,29 +300,32 @@ class Cookie:
 
 
 class Team:
-    """Represents a team of 5 cookies with validation and scoring."""
+    """Represents a team of 5 cookies with up to 3 treasures, validation, and scoring."""
 
-    def __init__(self, cookies: List[Cookie], include_synergy: bool = True):
+    def __init__(self, cookies: List[Cookie], treasures: Optional[List[Treasure]] = None, include_synergy: bool = True):
         """
         Initialize a Team instance.
 
         Args:
             cookies: List of exactly 5 unique Cookie objects
+            treasures: Optional list of up to 3 unique Treasure objects
             include_synergy: Whether to include synergy bonus in score (default: True)
 
         Raises:
-            ValueError: If team doesn't have exactly 5 unique cookies
+            ValueError: If team doesn't have exactly 5 unique cookies or more than 3 treasures
         """
         self.cookies = cookies
+        self.treasures = treasures if treasures else []
         self.include_synergy = include_synergy
         self.validate()
         self.synergy_score = 0.0
         self.synergy_breakdown = {}
+        self.treasure_bonus = 0.0
         self.composition_score = self.calculate_score()
 
     def validate(self) -> bool:
         """
-        Validate team composition.
+        Validate team composition including treasures.
 
         Returns:
             bool: True if valid
@@ -182,6 +338,12 @@ class Team:
 
         if len(set(self.cookies)) != 5:
             raise ValueError("Team cannot have duplicate cookies")
+
+        if len(self.treasures) > 3:
+            raise ValueError(f"Team can have maximum 3 treasures, got {len(self.treasures)}")
+
+        if len(self.treasures) != len(set(self.treasures)):
+            raise ValueError("Team cannot have duplicate treasures")
 
         return True
 
@@ -375,30 +537,50 @@ class Team:
 class TeamOptimizer:
     """Main class for generating and ranking team compositions."""
 
-    def __init__(self, csv_filepath: str):
+    def __init__(self, csv_filepath: str, treasures_filepath: str = 'crk_treasures.csv'):
         """
-        Initialize TeamOptimizer with cookie data.
+        Initialize TeamOptimizer with cookie and treasure data.
 
         Args:
             csv_filepath: Path to the cookie CSV file
+            treasures_filepath: Path to the treasures CSV file (default: 'crk_treasures.csv')
         """
         self.cookies_df = load_data(csv_filepath)
         if self.cookies_df is None:
             raise ValueError(f"Failed to load data from {csv_filepath}")
 
+        self.rarity_weights = RARITY_WEIGHTS
         self.all_cookies = self.load_cookies()
+        self.all_treasures = self.load_treasures(treasures_filepath)
+
         print(f"Loaded {len(self.all_cookies)} cookies for team optimization")
+        print(f"Loaded {len(self.all_treasures)} treasures")
 
     def load_cookies(self) -> List[Cookie]:
         """
-        Convert DataFrame to Cookie objects.
+        Convert DataFrame to Cookie objects with ability data merged.
 
         Returns:
             List[Cookie]: List of all available cookies
         """
         cookies = []
 
-        for _, row in self.cookies_df.iterrows():
+        # Load ability data from separate CSV
+        try:
+            abilities_df = pd.read_csv('cookie_abilities.csv')
+
+            # Merge ability data with main cookie data on cookie_name
+            merged_df = self.cookies_df.merge(
+                abilities_df,
+                on='cookie_name',
+                how='left'
+            )
+        except FileNotFoundError:
+            # If ability file doesn't exist, use main data only
+            print("Warning: cookie_abilities.csv not found. Loading cookies without ability data.")
+            merged_df = self.cookies_df
+
+        for _, row in merged_df.iterrows():
             # Skip cookies with missing critical data
             if pd.isna(row['cookie_name']) or pd.isna(row['cookie_rarity']):
                 continue
@@ -408,16 +590,112 @@ class TeamOptimizer:
             if 'cookie_element' in row and not pd.isna(row['cookie_element']) and row['cookie_element'] != 'N/A':
                 element = row['cookie_element']
 
+            # Extract ability attributes if available
+            skill_name = row.get('skill_name') if 'skill_name' in row and not pd.isna(row.get('skill_name')) else None
+            skill_type = row.get('skill_type') if 'skill_type' in row and not pd.isna(row.get('skill_type')) else None
+            crowd_control = row.get('crowd_control') if 'crowd_control' in row and not pd.isna(row.get('crowd_control')) else None
+            grants_immunity = row.get('grants_immunity') if 'grants_immunity' in row and not pd.isna(row.get('grants_immunity')) else None
+            target_type = row.get('target_type') if 'target_type' in row and not pd.isna(row.get('target_type')) else None
+            key_mechanic = row.get('key_mechanic') if 'key_mechanic' in row and not pd.isna(row.get('key_mechanic')) else None
+
+            # Convert boolean strings to actual booleans
+            provides_healing = False
+            if 'provides_healing' in row and not pd.isna(row.get('provides_healing')):
+                provides_healing = str(row['provides_healing']).lower() == 'true'
+
+            provides_shield = False
+            if 'provides_shield' in row and not pd.isna(row.get('provides_shield')):
+                provides_shield = str(row['provides_shield']).lower() == 'true'
+
+            anti_heal = False
+            if 'anti_heal' in row and not pd.isna(row.get('anti_heal')):
+                anti_heal = str(row['anti_heal']).lower() == 'true'
+
+            anti_tank = False
+            if 'anti_tank' in row and not pd.isna(row.get('anti_tank')):
+                anti_tank = str(row['anti_tank']).lower() == 'true'
+
+            dispel = False
+            if 'dispel' in row and not pd.isna(row.get('dispel')):
+                dispel = str(row['dispel']).lower() == 'true'
+
             cookie = Cookie(
                 name=row['cookie_name'],
                 rarity=row['cookie_rarity'],
                 role=row['cookie_role'] if not pd.isna(row['cookie_role']) else 'Unknown',
                 position=row['cookie_position'] if not pd.isna(row['cookie_position']) else 'Middle',
-                element=element
+                element=element,
+                skill_name=skill_name,
+                skill_type=skill_type,
+                crowd_control=crowd_control,
+                grants_immunity=grants_immunity,
+                provides_healing=provides_healing,
+                provides_shield=provides_shield,
+                anti_heal=anti_heal,
+                anti_tank=anti_tank,
+                dispel=dispel,
+                target_type=target_type,
+                key_mechanic=key_mechanic
             )
             cookies.append(cookie)
 
         return cookies
+
+    def load_treasures(self, treasures_filepath: str) -> List[Treasure]:
+        """
+        Load treasures from CSV file.
+
+        Args:
+            treasures_filepath: Path to treasures CSV file
+
+        Returns:
+            List[Treasure]: List of all available treasures
+        """
+        treasures = []
+
+        try:
+            treasures_df = pd.read_csv(treasures_filepath)
+
+            for _, row in treasures_df.iterrows():
+                # Skip treasures with missing critical data
+                if pd.isna(row.get('treasure_name')):
+                    continue
+
+                # Convert boolean strings to actual booleans
+                revive = str(row.get('revive', 'False')).lower() == 'true'
+                debuff_cleanse = str(row.get('debuff_cleanse', 'False')).lower() == 'true'
+                enemy_debuff = str(row.get('enemy_debuff', 'False')).lower() == 'true'
+                summon_boost = str(row.get('summon_boost', 'False')).lower() == 'true'
+
+                treasure = Treasure(
+                    name=row['treasure_name'],
+                    rarity=row.get('rarity', 'Common'),
+                    activation_type=row.get('activation_type', 'Passive'),
+                    tier_ranking=row.get('tier_ranking', 'C'),
+                    effect_category=row.get('effect_category', 'Offensive'),
+                    primary_effect=row.get('primary_effect', ''),
+                    atk_boost_max=float(row.get('atk_boost_max', 0.0)),
+                    crit_boost_max=float(row.get('crit_boost_max', 0.0)),
+                    cooldown_reduction_max=float(row.get('cooldown_reduction_max', 0.0)),
+                    dmg_resist_max=float(row.get('dmg_resist_max', 0.0)),
+                    hp_shield_max=float(row.get('hp_shield_max', 0.0)),
+                    heal_max=float(row.get('heal_max', 0.0)),
+                    revive=revive,
+                    debuff_cleanse=debuff_cleanse,
+                    enemy_debuff=enemy_debuff,
+                    summon_boost=summon_boost,
+                    recommended_archetypes=row.get('recommended_archetypes', ''),
+                    cooldown_seconds=float(row.get('cooldown_seconds', 0.0)),
+                    special_condition=row.get('special_condition', 'None')
+                )
+                treasures.append(treasure)
+
+        except FileNotFoundError:
+            print(f"Warning: {treasures_filepath} not found. No treasures loaded.")
+        except Exception as e:
+            print(f"Error loading treasures: {e}")
+
+        return treasures
 
     def update_cookie_stats(self, cookie_stats: Dict[str, Dict[str, float]]):
         """
@@ -771,6 +1049,95 @@ class TeamOptimizer:
     def filter_by_position(self, position: str) -> List[Cookie]:
         """Get all cookies at a specific position."""
         return [c for c in self.all_cookies if c.position == position]
+
+    def recommend_treasures(self, team: Team, top_n: int = 3) -> List[Tuple[Treasure, float, str]]:
+        """
+        Recommend treasures for a team based on team composition and treasure synergies.
+
+        Args:
+            team: Team to recommend treasures for
+            top_n: Number of treasure recommendations to return (default: 3)
+
+        Returns:
+            List of (Treasure, score, reason) tuples sorted by score
+        """
+        treasure_scores = []
+
+        for treasure in self.all_treasures:
+            score = 0.0
+            reasons = []
+
+            # Base score from tier ranking
+            tier_base = {'S+': 10.0, 'S': 8.0, 'A': 6.0, 'B': 4.0, 'C': 2.0}
+            score += tier_base.get(treasure.tier_ranking, 2.0)
+
+            # Check archetype compatibility
+            role_dist = team.get_role_distribution()
+            team_archetypes = set()
+
+            # Determine team archetypes
+            if any(role in role_dist for role in ['Magic', 'Ranged', 'Bomber', 'Ambush']):
+                team_archetypes.add('DPS')
+            if any(role in role_dist for role in ['Defense', 'Charge']):
+                team_archetypes.add('Tank')
+            if any(role in role_dist for role in ['Healing', 'Support']):
+                team_archetypes.add('Sustain')
+
+            # Check for summoners
+            if any(c.skill_type == 'Summon' if hasattr(c, 'skill_type') and c.skill_type else False for c in team.cookies):
+                team_archetypes.add('Summoner')
+
+            # Universal treasures get bonus for any team
+            if 'Universal' in treasure.recommended_archetypes:
+                score += 5.0
+                reasons.append("Universal treasure (works with any team)")
+
+            # Archetype matching bonus
+            matching_archetypes = set(treasure.recommended_archetypes) & team_archetypes
+            if matching_archetypes:
+                score += len(matching_archetypes) * 2.0
+                reasons.append(f"Matches team archetypes: {', '.join(matching_archetypes)}")
+
+            # Summoner synergy (critical for summoner teams)
+            if treasure.summon_boost:
+                if 'Summoner' in team_archetypes:
+                    score += 8.0  # Huge bonus for summoner teams
+                    reasons.append("ESSENTIAL for summoner team")
+                else:
+                    score -= 5.0  # Penalty if no summoners
+
+            # Revival synergy for squishy teams
+            if treasure.revive:
+                rear_count = sum(1 for c in team.cookies if c.position == 'Rear')
+                if rear_count >= 3:
+                    score += 4.0
+                    reasons.append("Revival protects vulnerable backline")
+
+            # Healing/Shield synergy
+            has_healer = any(c.provides_healing if hasattr(c, 'provides_healing') else False for c in team.cookies)
+            if treasure.hp_shield_max > 0 or treasure.heal_max > 0:
+                if has_healer:
+                    score += 3.0
+                    reasons.append("Stacks with team's existing sustain")
+
+            # Offensive synergy
+            if treasure.atk_boost_max > 0 or treasure.crit_boost_max > 0:
+                if 'DPS' in team_archetypes:
+                    score += 3.0
+                    reasons.append("Amplifies team damage output")
+
+            # Cooldown reduction (universally valuable)
+            if treasure.cooldown_reduction_max > 0:
+                score += 4.0
+                reasons.append("Faster skill rotation for all cookies")
+
+            # Compile final recommendation
+            reason = reasons[0] if reasons else "Standard treasure"
+            treasure_scores.append((treasure, score, reason))
+
+        # Sort by score and return top N
+        treasure_scores.sort(key=lambda x: x[1], reverse=True)
+        return treasure_scores[:top_n]
 
     def export_teams(self, teams: List[Team], filepath: str, format: str = 'json'):
         """

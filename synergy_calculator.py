@@ -126,59 +126,92 @@ class SynergyCalculator:
 
     def calculate_cookie_synergy(self, cookie1: Cookie, cookie2: Cookie) -> float:
         """
-        Calculate synergy score between two individual cookies.
+        Calculate synergy score between two individual cookies including ability synergies.
 
         Args:
             cookie1: First cookie
             cookie2: Second cookie
 
         Returns:
-            float: Synergy score (0-10, where 10 is perfect synergy)
+            float: Synergy score (0-12, where 12 is perfect synergy)
         """
         synergy_score = 0.0
 
-        # Role synergy (0-5 points)
+        # Role synergy (0-4 points)
         role1 = cookie1.role
         role2 = cookie2.role
 
         if role1 in self.role_matrix and role2 in self.role_matrix[role1]:
-            role_synergy = self.role_matrix[role1][role2] * 5.0
+            role_synergy = self.role_matrix[role1][role2] * 4.0
             synergy_score += role_synergy
 
-        # Position synergy (0-2 points)
+        # Position synergy (0-1.5 points)
         # Different positions = better coverage
         if cookie1.position != cookie2.position:
-            synergy_score += 2.0
+            synergy_score += 1.5
         else:
             synergy_score += 0.5  # Same position = some synergy
 
-        # Elemental synergy (0-3 points)
+        # Elemental synergy (0-2 points)
         if cookie1.rarity != 'N/A' and cookie2.rarity != 'N/A':
             element1 = getattr(cookie1, 'element', 'N/A')
             element2 = getattr(cookie2, 'element', 'N/A')
 
             if element1 != 'N/A' and element2 != 'N/A' and element1 == element2:
-                synergy_score += 3.0  # Same element bonus
+                synergy_score += 2.0  # Same element bonus
             elif element1 != 'N/A' and element2 != 'N/A':
-                synergy_score += 0.5  # Different elements = slight bonus
+                synergy_score += 0.3  # Different elements = slight bonus
 
-        return min(synergy_score, 10.0)  # Cap at 10
+        # Ability-based synergies (0-4.5 points total)
+
+        # 1. CC + Burst Damage synergy (0-1.5 points)
+        # Crowd control enables burst damage to hit safely
+        if cookie1.crowd_control and cookie1.crowd_control != 'None':
+            if cookie2.skill_type == 'Damage':
+                synergy_score += 1.5
+        elif cookie2.crowd_control and cookie2.crowd_control != 'None':
+            if cookie1.skill_type == 'Damage':
+                synergy_score += 1.5
+
+        # 2. Healer + Shield provider synergy (0-1.0 points)
+        # Stacking sustain for maximum survivability
+        if cookie1.provides_healing and cookie2.provides_shield:
+            synergy_score += 1.0
+        elif cookie2.provides_healing and cookie1.provides_shield:
+            synergy_score += 1.0
+
+        # 3. Immunity + Dispel synergy (0-1.0 points)
+        # Comprehensive debuff protection
+        if cookie1.grants_immunity and cookie1.grants_immunity != 'None':
+            if cookie2.dispel:
+                synergy_score += 1.0
+        elif cookie2.grants_immunity and cookie2.grants_immunity != 'None':
+            if cookie1.dispel:
+                synergy_score += 1.0
+
+        # 4. Anti-tank + Tank-busting synergy (0-1.0 points)
+        # Multiple sources of defense shred
+        if cookie1.anti_tank and cookie2.anti_tank:
+            synergy_score += 1.0
+
+        return min(synergy_score, 12.0)  # Cap at 12 (increased from 10)
 
     def calculate_team_synergy(self, team: Team) -> Dict[str, float]:
         """
-        Calculate comprehensive team synergy score.
+        Calculate comprehensive team synergy score including ability synergies.
 
         Args:
             team: Team instance to analyze
 
         Returns:
             dict: Dictionary with synergy breakdown
-                - total_score: Overall synergy (0-100)
+                - total_score: Overall synergy (0-110)
                 - role_synergy: Role compatibility (0-30)
                 - position_synergy: Position coverage (0-20)
                 - element_synergy: Elemental matching (0-25)
                 - type_synergy: Type-based bonus (0-15)
                 - coverage_synergy: Buff/debuff coverage (0-10)
+                - ability_synergy: Ability-based synergies (0-10)
         """
         synergy_breakdown = {
             'role_synergy': 0.0,
@@ -186,6 +219,7 @@ class SynergyCalculator:
             'element_synergy': 0.0,
             'type_synergy': 0.0,
             'coverage_synergy': 0.0,
+            'ability_synergy': 0.0,
             'total_score': 0.0
         }
 
@@ -295,13 +329,45 @@ class SynergyCalculator:
 
         synergy_breakdown['coverage_synergy'] = coverage_score
 
+        # 6. ABILITY SYNERGY (0-10 points)
+        # Check for ability-based synergies
+        ability_score = 0.0
+
+        # Count cookies with specific abilities
+        has_cc = any(c.crowd_control and c.crowd_control != 'None' for c in team.cookies)
+        has_burst_damage = any(c.skill_type == 'Damage' for c in team.cookies)
+        has_healing = any(c.provides_healing for c in team.cookies)
+        has_shield = any(c.provides_shield for c in team.cookies)
+        has_immunity = any(c.grants_immunity and c.grants_immunity != 'None' for c in team.cookies)
+        has_dispel = any(c.dispel for c in team.cookies)
+        num_anti_tank = sum(1 for c in team.cookies if c.anti_tank)
+
+        # CC + Burst Damage combo (2.5 points)
+        if has_cc and has_burst_damage:
+            ability_score += 2.5
+
+        # Healer + Shield combo (2.5 points)
+        if has_healing and has_shield:
+            ability_score += 2.5
+
+        # Immunity + Dispel combo (2.5 points)
+        if has_immunity and has_dispel:
+            ability_score += 2.5
+
+        # Multiple anti-tank (up to 2.5 points)
+        if num_anti_tank >= 2:
+            ability_score += min(num_anti_tank * 0.8, 2.5)
+
+        synergy_breakdown['ability_synergy'] = min(ability_score, 10.0)
+
         # Calculate total synergy score
         synergy_breakdown['total_score'] = (
             synergy_breakdown['role_synergy'] +
             synergy_breakdown['position_synergy'] +
             synergy_breakdown['element_synergy'] +
             synergy_breakdown['type_synergy'] +
-            synergy_breakdown['coverage_synergy']
+            synergy_breakdown['coverage_synergy'] +
+            synergy_breakdown['ability_synergy']
         )
 
         return synergy_breakdown
@@ -383,7 +449,7 @@ class SynergyCalculator:
         """
         breakdown = self.calculate_team_synergy(team)
 
-        explanation = f"Team Synergy Analysis (Total: {breakdown['total_score']:.1f}/100)\n\n"
+        explanation = f"Team Synergy Analysis (Total: {breakdown['total_score']:.1f}/110)\n\n"
 
         # Role synergy
         explanation += f"⚔️  Role Synergy: {breakdown['role_synergy']:.1f}/30\n"
@@ -422,6 +488,28 @@ class SynergyCalculator:
         explanation += f"\n🛡️  Coverage: {breakdown['coverage_synergy']:.1f}/10\n"
         explanation += f"   Tank: {'✓' if team.has_tank() else '✗'} | "
         explanation += f"Healer: {'✓' if team.has_healer() else '✗'}\n"
+
+        # Ability synergy
+        explanation += f"\n💫 Ability Synergy: {breakdown['ability_synergy']:.1f}/10\n"
+        ability_features = []
+        has_cc = any(c.crowd_control and c.crowd_control != 'None' for c in team.cookies)
+        has_burst = any(c.skill_type == 'Damage' for c in team.cookies)
+        has_healing = any(c.provides_healing for c in team.cookies)
+        has_shield = any(c.provides_shield for c in team.cookies)
+        has_immunity = any(c.grants_immunity and c.grants_immunity != 'None' for c in team.cookies)
+        has_dispel = any(c.dispel for c in team.cookies)
+
+        if has_cc and has_burst:
+            ability_features.append("CC+Burst combo")
+        if has_healing and has_shield:
+            ability_features.append("Heal+Shield synergy")
+        if has_immunity and has_dispel:
+            ability_features.append("Immunity+Dispel coverage")
+
+        if ability_features:
+            explanation += f"   Active synergies: {', '.join(ability_features)}\n"
+        else:
+            explanation += "   No special ability synergies detected.\n"
 
         return explanation
 

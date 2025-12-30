@@ -11,13 +11,17 @@ import os
 # Add parent directory to path to import team_optimizer
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from team_optimizer import TeamOptimizer, Cookie
+from team_optimizer import TeamOptimizer, Cookie, Team
+from counter_team_generator import CounterTeamGenerator
 
 app = Flask(__name__)
 
 # Initialize optimizer (CSV is in parent directory)
 csv_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'crk-cookies.csv')
 optimizer = TeamOptimizer(csv_path)
+
+# Initialize counter-team generator
+counter_generator = CounterTeamGenerator(optimizer)
 
 # Rarity color mapping for UI
 RARITY_COLORS = {
@@ -161,6 +165,121 @@ def get_stats():
         'positionDistribution': dict(position_counts),
         'averagePower': round(sum(c.get_power_score() for c in optimizer.all_cookies) / len(optimizer.all_cookies), 2)
     })
+
+
+@app.route('/api/counter-teams', methods=['POST'])
+def generate_counter_teams():
+    """Generate counter-teams against an enemy team composition."""
+    try:
+        data = request.json
+        enemy_cookie_names = data.get('enemyTeam', [])
+        num_counter_teams = data.get('numCounterTeams', 5)
+        method = data.get('method', 'random')
+        required_cookies = data.get('requiredCookies', [])
+
+        # Validate enemy team
+        if not enemy_cookie_names or len(enemy_cookie_names) != 5:
+            return jsonify({'error': 'Enemy team must have exactly 5 cookies'}), 400
+
+        # Build enemy team
+        enemy_cookies = []
+        for name in enemy_cookie_names:
+            cookie = next((c for c in optimizer.all_cookies if c.name == name), None)
+            if not cookie:
+                return jsonify({'error': f'Cookie not found: {name}'}), 404
+            enemy_cookies.append(cookie)
+
+        enemy_team = Team(enemy_cookies)
+
+        # Analyze enemy team
+        analysis = counter_generator.analyze_enemy_team(enemy_team)
+        weaknesses = counter_generator.identify_weaknesses(enemy_team)
+        counter_strategy = counter_generator.generate_counter_strategies(enemy_team)
+
+        # Generate counter-teams
+        counter_teams = counter_generator.find_counter_teams(
+            enemy_team,
+            n=num_counter_teams,
+            method=method,
+            required_cookies=required_cookies if required_cookies else None
+        )
+
+        # Format response
+        counter_teams_data = []
+        for team, counter_info in counter_teams:
+            team_cookies = []
+            for cookie in team.cookies:
+                team_cookies.append({
+                    'name': cookie.name,
+                    'rarity': cookie.rarity,
+                    'role': cookie.role,
+                    'position': cookie.position,
+                    'power': round(cookie.get_power_score(), 2),
+                    'color': RARITY_COLORS.get(cookie.rarity, '#808080'),
+                    'element': cookie.element if hasattr(cookie, 'element') and cookie.element else 'N/A'
+                })
+
+            # Get synergy breakdown if available
+            synergy_data = {}
+            if hasattr(team, 'synergy_breakdown') and team.synergy_breakdown:
+                synergy_data = {
+                    'total_score': round(team.synergy_score, 1),
+                    'breakdown': {
+                        'role_synergy': round(team.synergy_breakdown['role_synergy'], 1),
+                        'position_synergy': round(team.synergy_breakdown['position_synergy'], 1),
+                        'element_synergy': round(team.synergy_breakdown['element_synergy'], 1),
+                        'type_synergy': round(team.synergy_breakdown['type_synergy'], 1),
+                        'coverage_synergy': round(team.synergy_breakdown['coverage_synergy'], 1)
+                    }
+                }
+
+            counter_teams_data.append({
+                'cookies': team_cookies,
+                'score': round(team.composition_score, 2),
+                'counterScore': round(counter_info['counter_score'], 1),
+                'combinedScore': round(counter_info['combined_score'], 1),
+                'strategy': counter_info['strategy'],
+                'priorityTargets': counter_info['priority_targets'],
+                'weaknessesExploited': len(counter_info['weaknesses_exploited']),
+                'roleDistribution': team.get_role_distribution(),
+                'positionDistribution': team.get_position_distribution(),
+                'synergy': synergy_data
+            })
+
+        # Format weaknesses
+        weaknesses_data = [{
+            'weakness': w['weakness'],
+            'description': w['description'],
+            'exploit': w['exploit'],
+            'priority': w['priority'],
+            'confidence': w['confidence']
+        } for w in weaknesses]
+
+        return jsonify({
+            'success': True,
+            'enemyAnalysis': {
+                'healers': analysis['healers'],
+                'tanks': analysis['tanks'],
+                'dpsCount': analysis['dps_count'],
+                'frontPosition': analysis['front_position'],
+                'middlePosition': analysis['middle_position'],
+                'rearPosition': analysis['rear_position'],
+                'hasShadowMilk': analysis['has_shadow_milk'],
+                'beastCookies': analysis['beast_cookies']
+            },
+            'weaknesses': weaknesses_data,
+            'counterStrategy': {
+                'recommendedCookies': counter_strategy['recommended_cookies'],
+                'avoidCookies': counter_strategy['avoid_cookies'],
+                'description': counter_strategy['strategy_description'],
+                'teamArchetype': counter_strategy['team_archetype'],
+                'confidence': counter_strategy['confidence']
+            },
+            'counterTeams': counter_teams_data
+        })
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 if __name__ == '__main__':

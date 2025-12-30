@@ -1,0 +1,212 @@
+{
+  "teams": [
+    {
+      "score": 91.0,
+      "cookies": [
+        {
+          "name": "Silent Salt Cookie",
+          "rarity": "Beast",
+          "role": "Ambush",
+          "position": "Front",
+          "cookie_level": null,
+          "skill_level": null,
+          "topping_quality": null,
+          "power_score": 7.0
+        },
+        {
+          "name": "Moonlight Cookie",
+          "rarity": "Legendary",
+          "role": "Magic",
+          "position": "Middle",
+          "cookie_level": null,
+          "skill_level": null,
+          "topping_quality": null,
+          "power_score": 5.0
+        },
+        {
+          "name": "Pinecone Cookie",
+          "rarity": "Epic",
+          "role": "Bomber",
+          "position": "Front",
+          "cookie_level": null,
+          "skill_level": null,
+          "topping_quality": null,
+          "power_score": 3.0
+        },
+        {
+          "name": "Pure Vanilla Cookie",
+          "rarity": "Ancient",
+          "role": "Healing",
+          "position": "Rear",
+          "cookie_level": null,
+          "skill_level": null,
+          "topping_quality": null,
+          "power_score": 6.0
+        },
+        {
+          "name": "Burning Spice Cookie",
+          "rarity": "Beast",
+          "role": "Charge",
+          "position": "Front",
+          "cookie_level": null,
+          "skill_level": null,
+          "topping_quality": null,
+          "power_score": 7.0
+        }
+      ],
+      "role_distribution": {
+        "Ambush": 1,
+        "Magic": 1,
+        "Bomber": 1,
+        "Healing": 1,
+        "Charge": 1
+      },
+      "position_distribution": {
+        "Front": 3,
+        "Middle": 1,
+        "Rear": 1
+      },
+      "has_tank": true,
+      "has_healer": true
+    },
+    {
+      "score": 87.0,
+      "cookies": [
+        {
+          "name": "Shadow Milk Cookie",
+          "rarity": "Beast",
+          "role": "Magic",
+          "position": "Middle",
+          "cookie_level": null,
+          "skill_level": null,
+          "topping_quality": null,
+          "power_score": 7.0
+        },
+        {
+          "name": "Sherbet Cookie",
+          "rarity": "Super Epic",
+          "role": "Ranged",
+          "position": "Middle",
+          "cookie_level": null,
+          "skill_level": null,
+          "topping_quality": null,
+          "power_score": 4.0
+        },
+        {
+          "name": "Green Tea Mousse Cookie",
+          "rarity": "Epic",
+          "role": "Defense",
+          "position": "Front",
+          "cookie_level": null,
+          "skill_level": null,
+          "topping_quality": null,
+          "power_score": 3.0
+        },
+        {
+          "name": "Mystic Flour Cookie",
+          "rarity": "Beast",
+          "role": "Healing",
+          "position": "Rear",
+          "cookie_level": null,
+          "skill_level": null,
+          "topping_quality": null,
+          "power_score": 7.0
+        },
+        {
+          "name": "Burnt Cheese Cookie",
+          "rarity": "Epic",
+          "role": "Charge",
+          "position": "Front",
+          "cookie_level": null,
+          "skill_level": null,
+          "topping_quality": null,
+          "power_score": 3.0
+        }
+      ],
+      "role_distribution": {
+        "Magic": 1,
+        "Ranged": 1,
+        "Defense": 1,
+        "Healing": 1,
+        "Charge": 1
+      },
+      "position_distribution": {
+        "Middle": 2,
+        "Front": 2,
+        "Rear": 1
+      },
+      "has_tank": true,
+      "has_healer": true
+    },
+    {
+      "score": 85.5,
+      "cookies": [
+        {
+          "name": "Burning Spice Cookie",
+          "rarity": "Beast",
+          "role": "Charge",
+          "position": "Front",
+          "cookie_level": null,
+          "skill_level": null,
+          "topping_quality": null,
+          "power_score": 7.0
+        },
+        {
+          "name": "Prophet Cookie",
+          "rarity": "Epic",
+          "role": "Support",
+          "position": "Rear",
+          "cookie_level": null,
+          "skill_level": null,
+          "topping_quality": null,
+          "power_score": 3.0
+        },
+        {
+          "name": "White Lily Cookie",
+          "rarity": "Ancient (Ascended)",
+          "role": "Bomber",
+          "position": "Middle",
+          "cookie_level": null,
+          "skill_level": null,
+          "topping_quality": null,
+          "power_score": 6.5
+        },
+        {
+          "name": "Royal Margarine Cookie",
+          "rarity": "Epic",
+          "role": "Ambush",
+          "position": "Middle",
+          "cookie_level": null,
+          "skill_level": null,
+          "topping_quality": null,
+          "power_score": 3.0
+        },
+        {
+          "name": "Wedding Cake Cookie",
+          "rarity": "Epic",
+          "role": "Magic",
+          "position": "Middle",
+          "cookie_level": null,
+          "skill_level": null,
+          "topping_quality": null,
+          "power_score": 3.0
+        }
+      ],
+      "role_distribution": {
+        "Charge": 1,
+        "Support": 1,
+        "Bomber": 1,
+        "Ambush": 1,
+        "Magic": 1
+      },
+      "position_distribution": {
+        "Front": 1,
+        "Rear": 1,
+        "Middle": 3
+      },
+      "has_tank": true,
+      "has_healer": true
+    }
+  ],
+  "total_teams": 3
+}

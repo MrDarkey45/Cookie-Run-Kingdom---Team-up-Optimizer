@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cookie Run: Kingdom - Team Optimizer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>🍪 Cookie Run: Kingdom</h1>
+            <h2>Team Optimizer</h2>
+            <p class="subtitle">Build the ultimate team with AI-powered optimization</p>
+        </header>
+
+        <!-- Control Panel -->
+        <div class="control-panel">
+            <h3>⚙️ Optimization Settings</h3>
+
+            <div class="settings-grid">
+                <!-- Method Selection -->
+                <div class="setting-group">
+                    <label for="method">Optimization Method</label>
+                    <select id="method" class="input-field">
+                        <option value="random">Random Sampling (Fast)</option>
+                        <option value="greedy">Greedy Algorithm (Power-focused)</option>
+                        <option value="genetic" selected>Genetic Algorithm (Best) ⭐</option>
+                        <option value="exhaustive">Exhaustive Search (Requires 3+ cookies)</option>
+                    </select>
+                    <small class="help-text">Genetic algorithm recommended for best results</small>
+                </div>
+
+                <!-- Number of Candidates -->
+                <div class="setting-group">
+                    <label for="numCandidates">Candidates / Generations</label>
+                    <input type="number" id="numCandidates" class="input-field" value="100" min="10" max="10000">
+                    <small class="help-text">Higher = better quality (but slower)</small>
+                </div>
+
+                <!-- Top N Teams -->
+                <div class="setting-group">
+                    <label for="topN">Teams to Show</label>
+                    <input type="number" id="topN" class="input-field" value="5" min="1" max="50">
+                    <small class="help-text">Number of top teams to display</small>
+                </div>
+            </div>
+
+            <!-- Required Cookies Section (Redesigned) -->
+            <div class="required-cookies-section">
+                <h4>🔒 Required Cookies (Build Around)</h4>
+                <p class="help-text">Select up to 5 cookies that must be in every team</p>
+
+                <!-- Selected Cookies Display -->
+                <div id="selectedCookies" class="selected-cookies">
+                    <p class="no-selection">No cookies selected - will optimize all combinations</p>
+                </div>
+
+                <!-- Search Bar -->
+                <input type="text" id="cookieSearch" class="search-input" placeholder="🔍 Search cookies to add...">
+
+                <!-- Scrollable Cookie List -->
+                <div id="cookieList" class="cookie-list-scrollable"></div>
+            </div>
+
+            <!-- Cookie Stats Input Section (Modal-based) -->
+            <div class="cookie-stats-section">
+                <h4>⚡ Cookie Stats (Optional - Advanced Mode)</h4>
+                <p class="help-text">Add detailed stats for your cookies to get personalized recommendations</p>
+                <button id="addStatsBtn" class="btn-secondary">
+                    ➕ Add Cookie Stats
+                </button>
+                <div id="addedStatsSummary" class="added-stats-summary"></div>
+            </div>
+
+            <!-- Optimize Button -->
+            <button id="optimizeBtn" class="btn-primary">
+                🚀 Optimize Teams
+            </button>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div id="loadingIndicator" class="loading-indicator" style="display: none;">
+            <div class="spinner"></div>
+            <p>Generating optimal teams...</p>
+        </div>
+
+        <!-- Results Section -->
+        <div id="resultsSection" class="results-section" style="display: none;">
+            <div class="results-header">
+                <h3>🏆 Optimized Teams</h3>
+                <div id="resultsStats" class="results-stats"></div>
+            </div>
+
+            <div id="teamsList" class="teams-list"></div>
+        </div>
+
+        <!-- Statistics Panel -->
+        <div class="stats-panel">
+            <h3>📊 Cookie Collection Stats</h3>
+            <div id="statsContent" class="stats-content">
+                <p>Loading statistics...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cookie Stats Modal -->
+    <div id="cookieStatsModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>⚡ Add Cookie Stats</h3>
+                <button class="modal-close" onclick="closeCookieStatsModal()">&times;</button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Search Bar with Autocomplete -->
+                <div class="modal-search-section">
+                    <input type="text" id="modalCookieSearch" class="modal-search-input"
+                           placeholder="🔍 Search for a cookie..." autocomplete="off">
+                    <div id="cookieSearchResults" class="cookie-search-results"></div>
+                </div>
+
+                <!-- Cookie Stats Form (Hidden until cookie selected) -->
+                <div id="cookieStatsForm" class="cookie-stats-form" style="display: none;">
+                    <div class="form-header">
+                        <h4 id="selectedCookieName"></h4>
+                        <div id="selectedCookieInfo" class="cookie-info-badge"></div>
+                    </div>
+
+                    <div class="form-grid">
+                        <!-- Cookie Level -->
+                        <div class="form-group">
+                            <label for="cookieLevel">Cookie Level</label>
+                            <input type="number" id="cookieLevel" min="1" max="90" value="90">
+                            <small>Max: 90</small>
+                        </div>
+
+                        <!-- Skill Level -->
+                        <div class="form-group">
+                            <label for="skillLevel">Skill Level</label>
+                            <input type="number" id="skillLevel" min="1" max="90" value="90">
+                            <small>Max: 90</small>
+                        </div>
+
+                        <!-- Toppings Section -->
+                        <div class="form-group-full">
+                            <h5>🍰 Toppings (Up to 5)</h5>
+                            <div id="toppingsContainer" class="toppings-container">
+                                <!-- Topping slots will be added dynamically -->
+                            </div>
+                            <button type="button" onclick="addToppingSlot()" class="btn-add-topping">+ Add Topping</button>
+                        </div>
+                    </div>
+
+                    <div class="modal-actions">
+                        <button type="button" onclick="saveCookieStats()" class="btn-save">Save Cookie Stats</button>
+                        <button type="button" onclick="cancelCookieStats()" class="btn-cancel">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

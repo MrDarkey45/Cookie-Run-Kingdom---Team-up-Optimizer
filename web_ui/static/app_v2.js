@@ -10,6 +10,7 @@ let currentToppings = [];
 document.addEventListener('DOMContentLoaded', () => {
     setupEventListeners();
     loadCookies();
+    updateMethodDescription(); // Set initial description
 });
 
 // ==================== EVENT LISTENERS ====================
@@ -26,6 +27,7 @@ function setupEventListeners() {
     document.getElementById('roleFilter').addEventListener('change', filterCookies);
     document.getElementById('positionFilter').addEventListener('change', filterCookies);
     document.getElementById('excludeAscended').addEventListener('change', handleExcludeAscendedChange);
+    document.getElementById('method').addEventListener('change', updateMethodDescription);
 
     // Counter-Team tab
     document.getElementById('generateCounterBtn').addEventListener('click', generateCounterTeams);
@@ -71,6 +73,21 @@ function handleExcludeAscendedChange() {
         enemySelectedCookies = enemySelectedCookies.filter(c => !c.rarity.includes('Ascended'));
         updateEnemySelectedCookiesDisplay();
     }
+}
+
+// ==================== METHOD DESCRIPTION UPDATE ====================
+function updateMethodDescription() {
+    const method = document.getElementById('method').value;
+    const descriptionEl = document.getElementById('methodDescription');
+
+    const descriptions = {
+        'random': 'Fast exploration, generates diverse teams quickly. Good for browsing options. (⚡⚡⚡ Speed)',
+        'greedy': 'Prioritizes highest-rarity cookies first. Power-focused approach. Good for raw strength. (⚡⚡⚡ Speed)',
+        'genetic': 'Evolutionary algorithm that optimizes team composition over generations. Best overall results (92-96/100 scores). Recommended for most users. (⚡⚡ Speed)',
+        'exhaustive': 'Tests ALL possible combinations. Guaranteed optimal, but slow. Only use with 3+ required cookies selected. (⚡ Speed varies)'
+    };
+
+    descriptionEl.textContent = descriptions[method] || '';
 }
 
 // ==================== COOKIE LOADING ====================

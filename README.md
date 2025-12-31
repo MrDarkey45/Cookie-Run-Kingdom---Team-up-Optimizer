@@ -60,6 +60,46 @@ A comprehensive Python application for optimizing Cookie Run: Kingdom team compo
 
 ## 🚀 Quick Start
 
+### **🎯 First Time User? Start Here!**
+
+**Step 1: Install Python Dependencies**
+```bash
+pip3 install pandas matplotlib seaborn flask
+```
+
+**Step 2: Launch the Web Interface**
+```bash
+cd web_ui
+python3 app.py
+```
+
+**Step 3: Open Your Browser**
+Go to: **http://localhost:5000**
+
+**Step 4: Try These Quick Examples:**
+
+1. **Find the Best Team Overall**
+   - Click the "Team Optimizer" tab
+   - Set Method to: **Genetic Algorithm** (best results)
+   - Click **"Generate Teams"**
+   - See top teams ranked by score!
+
+2. **Build Around Your Favorite Cookie**
+   - Search for your cookie (e.g., "Shadow Milk")
+   - Click it to add as required
+   - Click **"Generate Teams"**
+   - Get teams built around your cookie!
+
+3. **Counter an Enemy Team**
+   - Click the "Counter-Team Generator" tab
+   - Select 5 enemy cookies
+   - Click **"Generate Counter-Teams"**
+   - See recommended counters with strategies!
+
+**That's it!** You're ready to optimize! 🎉
+
+---
+
 ### **Option 1: Web Interface (Recommended)**
 
 ```bash
@@ -67,7 +107,7 @@ cd web_ui
 ./start_web_ui.sh
 ```
 
-Then open: **http://127.0.0.1:5000**
+Then open: **http://localhost:5000**
 
 ### **Option 2: Command Line**
 

@@ -42,11 +42,14 @@
                     <div class="setting-group">
                         <label for="method">Method</label>
                         <select id="method" class="input-field">
-                            <option value="random">Random</option>
-                            <option value="greedy">Greedy</option>
-                            <option value="genetic" selected>Genetic ⭐</option>
-                            <option value="exhaustive">Exhaustive</option>
+                            <option value="random">Random Sampling</option>
+                            <option value="greedy">Greedy (Power-Focused)</option>
+                            <option value="genetic" selected>Genetic Algorithm ⭐ (Best)</option>
+                            <option value="exhaustive">Exhaustive Search</option>
                         </select>
+                        <small id="methodDescription" style="display: block; margin-top: 8px; color: rgba(255,255,255,0.7); font-size: 0.85em; line-height: 1.4;">
+                            Fast exploration, generates diverse teams quickly. Good for browsing options.
+                        </small>
                     </div>
 
                     <div class="setting-group">

@@ -3,7 +3,7 @@
 ## 📁 Project Structure
 
 ```
-/Users/gabe/Documents/Darcy/Models/
+Models/
 ├── 📄 Core Files (Main Application)
 │   ├── cookie_analysis.py          # Original cookie data analysis
 │   ├── team_optimizer.py           # Team optimization engine
@@ -79,7 +79,7 @@
 
 ### **Run Web UI**
 ```bash
-cd /Users/gabe/Documents/Darcy/Models/web_ui
+cd web_ui
 ./start_web_ui.sh
 # Or manually:
 python3 app.py
@@ -89,8 +89,6 @@ Then open browser to: `http://localhost:5000`
 
 ### **Run Python Scripts**
 ```bash
-cd /Users/gabe/Documents/Darcy/Models
-
 # Find best teams
 python3 team_optimizer.py
 
@@ -182,8 +180,6 @@ Columns: `treasure_name`, `rarity`, `activation_type`, `tier_ranking`, `effect_c
 
 Run tests to verify functionality:
 ```bash
-cd /Users/gabe/Documents/Darcy/Models
-
 # Test treasure scoring
 python3 tests/test_treasure_scoring.py
 

@@ -421,4 +421,3 @@ web_ui/
 
 *Last Updated: December 30, 2024*
 *Version: 2.0*
-*Author: Claude Code Assistant*

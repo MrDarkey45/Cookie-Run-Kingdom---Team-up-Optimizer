@@ -11,7 +11,6 @@ The optimizer now supports **Treasures** - powerful items that teams can equip (
 ### **1. Test Treasure Scoring (CLI)**
 
 ```bash
-cd /Users/gabe/Documents/Darcy/Models
 python3 test_treasure_scoring.py
 ```
 
@@ -297,7 +296,7 @@ for team, info in counter_teams:
 **Fix**: Check `crk_treasures.csv` exists in root directory
 
 **Issue**: Python tests fail
-**Fix**: Run from `/Users/gabe/Documents/Darcy/Models` directory
+**Fix**: Run from the project root directory
 
 ---
 

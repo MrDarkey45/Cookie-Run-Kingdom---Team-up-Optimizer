@@ -221,8 +221,8 @@ def generate_counter_teams():
         required_cookies = data.get('requiredCookies', [])
 
         # Validate enemy team
-        if not enemy_cookie_names or len(enemy_cookie_names) != 5:
-            return jsonify({'error': 'Enemy team must have exactly 5 cookies'}), 400
+        if not enemy_cookie_names or len(enemy_cookie_names) < 1 or len(enemy_cookie_names) > 5:
+            return jsonify({'error': 'Enemy team must have 1-5 cookies'}), 400
 
         # Build enemy team
         enemy_cookies = []

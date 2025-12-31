@@ -24,6 +24,10 @@
                 <span class="tab-icon">⚔️</span>
                 <span class="tab-label">Counter-Team</span>
             </button>
+            <button class="tab-btn" data-tab="guild-battle">
+                <span class="tab-icon">🏰</span>
+                <span class="tab-label">Guild Battle</span>
+            </button>
             <button class="tab-btn" data-tab="cookie-manager">
                 <span class="tab-icon">📋</span>
                 <span class="tab-label">Cookie Manager</span>
@@ -190,7 +194,84 @@
                 </main>
             </div>
 
-            <!-- ==================== TAB 3: COOKIE MANAGER ==================== -->
+            <!-- ==================== TAB 3: GUILD BATTLE ==================== -->
+            <div id="guild-battle" class="tab-content">
+                <!-- Sidebar -->
+                <aside class="sidebar">
+                    <h3>Guild Battle</h3>
+
+                    <div class="setting-group">
+                        <label for="guildBoss">Select Boss</label>
+                        <select id="guildBoss" class="input-field">
+                            <option value="Red Velvet Dragon">🐉 Red Velvet Dragon</option>
+                            <option value="Avatar of Destiny">👁️ Avatar of Destiny</option>
+                            <option value="Living Abyss">🌊 Living Abyss</option>
+                            <option value="Machine-God of the Eternal Void">⚙️ Machine-God</option>
+                        </select>
+                    </div>
+
+                    <div class="setting-group">
+                        <label for="guildTeamsCount">Teams to Generate</label>
+                        <input type="number" id="guildTeamsCount" class="input-field" value="5" min="1" max="10">
+                    </div>
+
+                    <hr class="divider">
+
+                    <h4>Required Cookies (Optional)</h4>
+                    <div id="guildSelectedCookies" class="selected-cookies-sidebar">
+                        <p class="empty-state">None selected</p>
+                    </div>
+
+                    <button id="generateGuildBtn" class="btn-primary">
+                        🏰 Generate Teams
+                    </button>
+
+                    <hr class="divider">
+
+                    <div id="bossInfo" class="boss-info-box">
+                        <h4>Boss Strategy</h4>
+                        <p id="bossDescription">Select a boss to see strategy tips.</p>
+                    </div>
+                </aside>
+
+                <!-- Main Content -->
+                <main class="main-content">
+                    <div class="content-header">
+                        <h2>Select Cookies for Your Team</h2>
+                        <input type="text" id="guildCookieSearch" class="search-bar" placeholder="🔍 Search cookies...">
+                    </div>
+
+                    <div class="filter-bar">
+                        <select id="guildRarityFilter" class="filter-select">
+                            <option value="">All Rarities</option>
+                            <option value="Beast">Beast</option>
+                            <option value="Ancient">Ancient</option>
+                            <option value="Legendary">Legendary</option>
+                            <option value="Super Epic">Super Epic</option>
+                            <option value="Epic">Epic</option>
+                        </select>
+                        <select id="guildRoleFilter" class="filter-select">
+                            <option value="">All Roles</option>
+                            <option value="Healing">Healing</option>
+                            <option value="Defense">Defense</option>
+                            <option value="Magic">Magic</option>
+                            <option value="Ranged">Ranged</option>
+                            <option value="Ambush">Ambush</option>
+                            <option value="Support">Support</option>
+                        </select>
+                    </div>
+
+                    <div id="guildCookieGrid" class="cookie-grid"></div>
+
+                    <!-- Guild Battle Results Section -->
+                    <div id="guildResultsSection" class="results-section" style="display: none;">
+                        <h2>Recommended Teams for <span id="selectedBossName"></span></h2>
+                        <div id="guildTeamsList" class="teams-accordion"></div>
+                    </div>
+                </main>
+            </div>
+
+            <!-- ==================== TAB 4: COOKIE MANAGER ==================== -->
             <div id="cookie-manager" class="tab-content">
                 <!-- Sidebar -->
                 <aside class="sidebar">
@@ -291,6 +372,6 @@
         </div>
     </div>
 
-    <script src="{{ url_for('static', filename='app_v2.js') }}?v=2.1"></script>
+    <script src="{{ url_for('static', filename='app_v2.js') }}?v=3.0"></script>
 </body>
 </html>

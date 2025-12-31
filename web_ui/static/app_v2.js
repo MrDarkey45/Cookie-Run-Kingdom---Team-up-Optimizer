@@ -35,6 +35,13 @@ function setupEventListeners() {
     document.getElementById('enemyRarityFilter').addEventListener('change', filterEnemyCookies);
     document.getElementById('enemyRoleFilter').addEventListener('change', filterEnemyCookies);
 
+    // Guild Battle tab
+    document.getElementById('guildBoss').addEventListener('change', updateBossInfo);
+    document.getElementById('generateGuildBtn').addEventListener('click', generateGuildTeams);
+    document.getElementById('guildCookieSearch').addEventListener('input', loadGuildCookies);
+    document.getElementById('guildRarityFilter').addEventListener('change', loadGuildCookies);
+    document.getElementById('guildRoleFilter').addEventListener('change', loadGuildCookies);
+
     // Cookie Manager tab
     document.getElementById('managerCookieSearch').addEventListener('input', filterManagerCookies);
     document.getElementById('managerRarityFilter').addEventListener('change', filterManagerCookies);
@@ -55,6 +62,12 @@ function switchTab(tabId) {
         content.classList.remove('active');
     });
     document.getElementById(tabId).classList.add('active');
+
+    // Load tab-specific content
+    if (tabId === 'guild-battle') {
+        loadGuildCookies();
+        updateBossInfo();
+    }
 }
 
 // ==================== EXCLUDE ASCENDED HANDLER ====================
@@ -62,6 +75,7 @@ function handleExcludeAscendedChange() {
     // Refresh all cookie lists
     filterCookies();
     filterEnemyCookies();
+    loadGuildCookies();
     filterManagerCookies();
 
     // Remove Ascended cookies from selected
@@ -72,6 +86,9 @@ function handleExcludeAscendedChange() {
 
         enemySelectedCookies = enemySelectedCookies.filter(c => !c.rarity.includes('Ascended'));
         updateEnemySelectedCookiesDisplay();
+
+        guildSelectedCookies = guildSelectedCookies.filter(c => !c.rarity.includes('Ascended'));
+        updateGuildSelectedCookiesDisplay();
     }
 }
 
@@ -651,4 +668,259 @@ function clearAllStats() {
         updateStatsCount();
         filterManagerCookies();
     }
+}
+
+
+// ==================== GUILD BATTLE ====================
+
+let guildSelectedCookies = [];
+const guildBosses = {
+    'Red Velvet Dragon': {
+        icon: '🐉',
+        description: '75% damage reflection, high DEF. Prioritize DEF shred and indirect damage.'
+    },
+    'Avatar of Destiny': {
+        icon: '👁️',
+        description: 'Immune to debuffs (triggers Reversal). Use periodic damage, shields, and ATK SPD buffs.'
+    },
+    'Living Abyss': {
+        icon: '🌊',
+        description: '95% damage reduction on boss. Target ooze blobs with AOE damage and crowd control.'
+    },
+    'Machine-God of the Eternal Void': {
+        icon: '⚙️',
+        description: 'Water-element focus. Multi-part boss weak to water, immune to electric.'
+    }
+};
+
+function updateBossInfo() {
+    const boss = document.getElementById('guildBoss').value;
+    const descEl = document.getElementById('bossDescription');
+
+    if (guildBosses[boss]) {
+        descEl.textContent = guildBosses[boss].description;
+    }
+}
+
+function loadGuildCookies() {
+    const grid = document.getElementById('guildCookieGrid');
+    grid.innerHTML = '';
+
+    const searchTerm = document.getElementById('guildCookieSearch').value.toLowerCase();
+    const rarityFilter = document.getElementById('guildRarityFilter').value;
+    const roleFilter = document.getElementById('guildRoleFilter').value;
+
+    let filtered = allCookies.filter(cookie => {
+        const matchesSearch = cookie.name.toLowerCase().includes(searchTerm);
+        const matchesRarity = !rarityFilter || cookie.rarity === rarityFilter;
+        const matchesRole = !roleFilter || cookie.role === roleFilter;
+        return matchesSearch && matchesRarity && matchesRole;
+    });
+
+    filtered.forEach(cookie => {
+        const isSelected = guildSelectedCookies.some(c => c.name === cookie.name);
+
+        const card = document.createElement('div');
+        card.className = `cookie-card` + (isSelected ? ' selected' : '');
+        card.style.borderColor = cookie.color;
+
+        card.innerHTML = `
+            <div class="cookie-icon">
+                <img src="` + cookie.image_url + `"
+                     alt="` + cookie.name + `"
+                     onerror="this.style.display='none'; this.parentElement.textContent='🍪';">
+            </div>
+            <div class="cookie-name">` + cookie.name + `</div>
+            <div class="cookie-meta">` + cookie.role + ` • ` + cookie.position + `</div>
+            <div class="cookie-rarity-badge" style="background-color: ` + cookie.color + `"></div>
+        `;
+
+        card.addEventListener('click', () => toggleGuildCookieSelection(cookie));
+        grid.appendChild(card);
+    });
+}
+
+function toggleGuildCookieSelection(cookie) {
+    const index = guildSelectedCookies.findIndex(c => c.name === cookie.name);
+
+    if (index > -1) {
+        guildSelectedCookies.splice(index, 1);
+    } else {
+        if (guildSelectedCookies.length < 5) {
+            guildSelectedCookies.push(cookie);
+        } else {
+            alert('Maximum 5 cookies allowed for required selection!');
+            return;
+        }
+    }
+
+    updateGuildSelectedCookiesDisplay();
+    loadGuildCookies();
+}
+
+function updateGuildSelectedCookiesDisplay() {
+    const container = document.getElementById('guildSelectedCookies');
+
+    if (guildSelectedCookies.length === 0) {
+        container.innerHTML = '<p class="empty-state">None selected</p>';
+        return;
+    }
+
+    container.innerHTML = guildSelectedCookies.map(cookie => `
+        <div class="selected-cookie-chip">
+            <span>` + cookie.name + `</span>
+            <button class="chip-remove" onclick="removeGuildCookie('` + cookie.name.replace(/'/g, "\\'") + `')">×</button>
+        </div>
+    `).join('');
+}
+
+function removeGuildCookie(cookieName) {
+    guildSelectedCookies = guildSelectedCookies.filter(c => c.name !== cookieName);
+    updateGuildSelectedCookiesDisplay();
+    loadGuildCookies();
+}
+
+async function generateGuildTeams() {
+    const boss = document.getElementById('guildBoss').value;
+    const numTeams = parseInt(document.getElementById('guildTeamsCount').value);
+
+    document.getElementById('loadingIndicator').style.display = 'flex';
+
+    try {
+        const response = await fetch('/api/guild-battle', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                boss: boss,
+                requiredCookies: guildSelectedCookies.map(c => c.name),
+                numTeams: numTeams
+            })
+        });
+
+        const data = await response.json();
+
+        if (!data.success) {
+            throw new Error(data.error || 'Guild Battle team generation failed');
+        }
+
+        displayGuildResults(data);
+    } catch (error) {
+        alert(`Error: ` + error.message);
+    } finally {
+        document.getElementById('loadingIndicator').style.display = 'none';
+    }
+}
+
+function displayGuildResults(data) {
+    const resultsSection = document.getElementById('guildResultsSection');
+    const teamsList = document.getElementById('guildTeamsList');
+    const bossNameSpan = document.getElementById('selectedBossName');
+
+    resultsSection.style.display = 'block';
+    bossNameSpan.textContent = data.boss;
+    teamsList.innerHTML = '';
+
+    data.teams.forEach((teamData, index) => {
+        const item = createGuildTeamAccordionItem(teamData, index, data.bossInfo);
+        teamsList.appendChild(item);
+    });
+
+    // Auto-expand first team
+    if (data.teams.length > 0) {
+        teamsList.firstElementChild.classList.add('active');
+        teamsList.firstElementChild.querySelector('.accordion-body').classList.add('expanded');
+    }
+
+    // Scroll to results
+    resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function createGuildTeamAccordionItem(teamData, index, bossInfo) {
+    const item = document.createElement('div');
+    item.className = 'accordion-item';
+
+    // Header
+    const header = document.createElement('div');
+    header.className = 'accordion-header';
+    header.innerHTML = `
+        <div class="team-header-left">
+            <span class="team-number">Team ` + (index + 1) + `</span>
+            <span class="team-score">Score: ` + teamData.score + `/100</span>
+        </div>
+        <button class="expand-btn">▼</button>
+    `;
+
+    // Body
+    const body = document.createElement('div');
+    body.className = 'accordion-body';
+
+    // Cookie cards
+    const cookieCards = teamData.cookies.map(cookie => `
+        <div class="result-cookie-card" style="border-color: ` + cookie.color + `">
+            <img src="` + cookie.image_url + `" alt="` + cookie.name + `" class="result-cookie-image">
+            <div class="result-cookie-info">
+                <h4>` + cookie.name + `</h4>
+                <p>` + cookie.role + ` • ` + cookie.position + `</p>
+                <span class="cookie-power">Power: ` + cookie.power + `</span>
+            </div>
+        </div>
+    `).join('');
+
+    // Strategy section
+    const strategyHTML = `
+        <div class="strategy-section">
+            <h4>🎯 Strategy</h4>
+            <p>` + teamData.strategy + `</p>
+        </div>
+    `;
+
+    // Boss Info
+    const bossInfoHTML = `
+        <div class="boss-strategy-section">
+            <h4>📚 Boss Tips</h4>
+            <p><strong>Description:</strong> ` + bossInfo.description + `</p>
+            <details>
+                <summary><strong>S-Tier Cookies</strong></summary>
+                <ul>` + bossInfo.sTierCookies.map(c => `<li>` + c + `</li>`).join('') + `</ul>
+            </details>
+        </div>
+    `;
+
+    // Role & Position Distribution
+    const roleDistHTML = Object.entries(teamData.roleDistribution)
+        .map(([role, count]) => `<span class="stat-badge">` + role + `: ` + count + `</span>`)
+        .join('');
+
+    const posDistHTML = Object.entries(teamData.positionDistribution)
+        .map(([pos, count]) => `<span class="stat-badge">` + pos + `: ` + count + `</span>`)
+        .join('');
+
+    body.innerHTML = `
+        <div class="team-cookies-grid">
+            ` + cookieCards + `
+        </div>
+        ` + strategyHTML + `
+        ` + bossInfoHTML + `
+        <div class="team-stats">
+            <div class="stat-group">
+                <h4>Role Distribution</h4>
+                <div class="stat-badges">` + roleDistHTML + `</div>
+            </div>
+            <div class="stat-group">
+                <h4>Position Distribution</h4>
+                <div class="stat-badges">` + posDistHTML + `</div>
+            </div>
+        </div>
+    `;
+
+    // Toggle functionality
+    header.addEventListener('click', () => {
+        item.classList.toggle('active');
+        body.classList.toggle('expanded');
+    });
+
+    item.appendChild(header);
+    item.appendChild(body);
+
+    return item;
 }

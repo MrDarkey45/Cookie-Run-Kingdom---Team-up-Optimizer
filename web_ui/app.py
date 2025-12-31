@@ -13,6 +13,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from team_optimizer import TeamOptimizer, Cookie, Team
 from counter_team_generator import CounterTeamGenerator
+from guild_battle_optimizer import GuildBattleOptimizer
 from cookie_images import get_cookie_image_url
 
 app = Flask(__name__)
@@ -23,6 +24,7 @@ optimizer = TeamOptimizer(csv_path)
 
 # Initialize counter-team generator
 counter_generator = CounterTeamGenerator(optimizer)
+guild_optimizer = GuildBattleOptimizer(optimizer)
 
 # Rarity color mapping for UI
 RARITY_COLORS = {
@@ -321,6 +323,74 @@ def generate_counter_teams():
                 'confidence': counter_strategy['confidence']
             },
             'counterTeams': counter_teams_data
+        })
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/guild-battle', methods=['POST'])
+def generate_guild_battle_teams():
+    """API endpoint for Guild Battle team generation."""
+    try:
+        data = request.get_json()
+        boss_name = data.get('boss')
+        required_cookie_names = data.get('requiredCookies', [])
+        num_teams = data.get('numTeams', 5)
+
+        # Validate boss
+        if not boss_name:
+            return jsonify({'error': 'Boss name is required'}), 400
+
+        # Get boss info
+        boss_info = guild_optimizer.get_boss_info(boss_name)
+        if not boss_info:
+            return jsonify({'error': f'Unknown boss: {boss_name}'}), 400
+
+        # Generate teams
+        teams_data = guild_optimizer.generate_guild_battle_team(
+            boss_name=boss_name,
+            required_cookies=required_cookie_names,
+            num_teams=num_teams
+        )
+
+        # Format response
+        guild_teams = []
+        for team_info in teams_data:
+            team = team_info['team']
+
+            team_cookies = []
+            for cookie in team.cookies:
+                team_cookies.append({
+                    'name': cookie.name,
+                    'rarity': cookie.rarity,
+                    'role': cookie.role,
+                    'position': cookie.position,
+                    'power': round(cookie.get_power_score(), 2),
+                    'color': RARITY_COLORS.get(cookie.rarity, '#808080'),
+                    'image_url': get_cookie_image_url(cookie.name),
+                    'element': cookie.element if hasattr(cookie, 'element') and cookie.element else 'N/A'
+                })
+
+            guild_teams.append({
+                'cookies': team_cookies,
+                'score': round(team_info['score'], 2),
+                'strategy': team_info['strategy'],
+                'roleDistribution': team.get_role_distribution(),
+                'positionDistribution': team.get_position_distribution()
+            })
+
+        return jsonify({
+            'success': True,
+            'boss': boss_name,
+            'bossInfo': {
+                'description': boss_info['description'],
+                'mechanics': boss_info['mechanics'],
+                'strategy': boss_info['strategy'],
+                'sTierCookies': boss_info['s_tier_cookies'],
+                'aTierCookies': boss_info['a_tier_cookies']
+            },
+            'teams': guild_teams
         })
 
     except Exception as e:

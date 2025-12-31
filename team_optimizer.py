@@ -178,7 +178,15 @@ class Cookie:
         anti_tank: bool = False,
         dispel: bool = False,
         target_type: Optional[str] = None,
-        key_mechanic: Optional[str] = None
+        key_mechanic: Optional[str] = None,
+        # Guild Battle-specific attributes
+        water_element: bool = False,
+        aoe_damage: bool = False,
+        def_shred: bool = False,
+        indirect_damage: bool = False,
+        attack_speed_buff: bool = False,
+        shield_provider: bool = False,
+        debuff_heavy: bool = False
     ):
         """
         Initialize a Cookie instance.
@@ -203,6 +211,13 @@ class Cookie:
             dispel: Can remove debuffs/buffs
             target_type: Targeting (AoE, Single_Target, etc.)
             key_mechanic: Brief ability description
+            water_element: Cookie has water-element attacks (for Guild Battle)
+            aoe_damage: Cookie excels at AOE damage (for Guild Battle)
+            def_shred: Cookie provides DEF reduction debuffs (for Guild Battle)
+            indirect_damage: Cookie deals indirect damage like poison/burn (for Guild Battle)
+            attack_speed_buff: Cookie provides ATK SPD buffs (for Guild Battle)
+            shield_provider: Cookie provides shields to allies (for Guild Battle)
+            debuff_heavy: Cookie relies heavily on debuffs (for Guild Battle)
         """
         self.name = name
         self.rarity = rarity
@@ -225,6 +240,15 @@ class Cookie:
         self.dispel = dispel
         self.target_type = target_type
         self.key_mechanic = key_mechanic
+
+        # Guild Battle-specific attributes
+        self.water_element = water_element
+        self.aoe_damage = aoe_damage
+        self.def_shred = def_shred
+        self.indirect_damage = indirect_damage
+        self.attack_speed_buff = attack_speed_buff
+        self.shield_provider = shield_provider
+        self.debuff_heavy = debuff_heavy
 
     def get_power_score(self) -> float:
         """
@@ -721,6 +745,24 @@ class TeamOptimizer:
             if 'dispel' in row and not pd.isna(row.get('dispel')):
                 dispel = str(row['dispel']).lower() == 'true'
 
+            # Auto-detect Guild Battle attributes
+            water_element = element and 'water' in element.lower() if element else False
+            aoe_damage = target_type == 'AoE' if target_type else False
+            def_shred = row['cookie_name'] in [
+                'Dark Choco Cookie', 'Candy Apple Cookie', 'Black Lemonade Cookie',
+                'Eclair Cookie', 'Affogato Cookie'
+            ]
+            indirect_damage = anti_heal or ('poison' in key_mechanic.lower() if key_mechanic else False) or ('burn' in key_mechanic.lower() if key_mechanic else False)
+            attack_speed_buff = row['cookie_name'] in [
+                'Mint Choco Cookie', 'Star Coral Cookie', 'Cotton Cookie',
+                'Financier Cookie'
+            ]
+            shield_provider = provides_shield
+            debuff_heavy = row['cookie_name'] in [
+                'Black Raisin Cookie', 'Captain Caviar Cookie', 'Linzer Cookie',
+                'Affogato Cookie', 'Eclair Cookie'
+            ]
+
             cookie = Cookie(
                 name=row['cookie_name'],
                 rarity=row['cookie_rarity'],
@@ -737,7 +779,14 @@ class TeamOptimizer:
                 anti_tank=anti_tank,
                 dispel=dispel,
                 target_type=target_type,
-                key_mechanic=key_mechanic
+                key_mechanic=key_mechanic,
+                water_element=water_element,
+                aoe_damage=aoe_damage,
+                def_shred=def_shred,
+                indirect_damage=indirect_damage,
+                attack_speed_buff=attack_speed_buff,
+                shield_provider=shield_provider,
+                debuff_heavy=debuff_heavy
             )
             cookies.append(cookie)
 

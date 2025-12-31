@@ -306,21 +306,23 @@ class Cookie:
 class Team:
     """Represents a team of 5 cookies with up to 3 treasures, validation, and scoring."""
 
-    def __init__(self, cookies: List[Cookie], treasures: Optional[List[Treasure]] = None, include_synergy: bool = True):
+    def __init__(self, cookies: List[Cookie], treasures: Optional[List[Treasure]] = None, include_synergy: bool = True, strict_validation: bool = True):
         """
         Initialize a Team instance.
 
         Args:
-            cookies: List of exactly 5 unique Cookie objects
+            cookies: List of exactly 5 unique Cookie objects (or 1-5 if strict_validation=False)
             treasures: Optional list of up to 3 unique Treasure objects
             include_synergy: Whether to include synergy bonus in score (default: True)
+            strict_validation: If True, enforce exactly 5 cookies. If False, allow 1-5 cookies (default: True)
 
         Raises:
-            ValueError: If team doesn't have exactly 5 unique cookies or more than 3 treasures
+            ValueError: If team doesn't have exactly 5 unique cookies (when strict) or more than 3 treasures
         """
         self.cookies = cookies
         self.treasures = treasures if treasures else []
         self.include_synergy = include_synergy
+        self.strict_validation = strict_validation
         self.validate()
         self.synergy_score = 0.0
         self.synergy_breakdown = {}
@@ -337,10 +339,14 @@ class Team:
         Raises:
             ValueError: If validation fails
         """
-        if len(self.cookies) != 5:
-            raise ValueError(f"Team must have exactly 5 cookies, got {len(self.cookies)}")
+        if self.strict_validation:
+            if len(self.cookies) != 5:
+                raise ValueError(f"Team must have exactly 5 cookies, got {len(self.cookies)}")
+        else:
+            if len(self.cookies) < 1 or len(self.cookies) > 5:
+                raise ValueError(f"Team must have 1-5 cookies, got {len(self.cookies)}")
 
-        if len(set(self.cookies)) != 5:
+        if len(set(self.cookies)) != len(self.cookies):
             raise ValueError("Team cannot have duplicate cookies")
 
         if len(self.treasures) > 3:

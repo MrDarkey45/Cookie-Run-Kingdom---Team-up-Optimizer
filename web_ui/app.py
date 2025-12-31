@@ -232,7 +232,7 @@ def generate_counter_teams():
                 return jsonify({'error': f'Cookie not found: {name}'}), 404
             enemy_cookies.append(cookie)
 
-        enemy_team = Team(enemy_cookies)
+        enemy_team = Team(enemy_cookies, strict_validation=False)
 
         # Analyze enemy team
         analysis = counter_generator.analyze_enemy_team(enemy_team)

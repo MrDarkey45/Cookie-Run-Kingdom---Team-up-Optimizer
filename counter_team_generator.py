@@ -17,6 +17,13 @@ Counter Strategy (0-100 confidence):
 from typing import List, Dict, Tuple, Optional
 from collections import Counter
 from team_optimizer import Cookie, Team, TeamOptimizer
+from meta_teams_database import (
+    analyze_enemy_team_threats,
+    recommend_counter_team,
+    get_cookie_counters,
+    META_TEAMS,
+    TREASURE_STRATEGIES
+)
 
 
 # Special cookie categories for counter detection
@@ -305,6 +312,38 @@ class CounterTeamGenerator:
             'confidence': 0
         }
 
+        # ===== META DATABASE INTEGRATION =====
+        # Use meta database for known powerful combinations
+        enemy_cookie_names = [c.name for c in enemy_team.cookies]
+
+        # Get meta-based counter recommendations
+        meta_recommendations = recommend_counter_team(enemy_cookie_names)
+        if meta_recommendations['recommended_cookies']:
+            # Add meta-recommended counters with high priority
+            counter_strategy['recommended_cookies'].extend(meta_recommendations['recommended_cookies'][:5])
+            counter_strategy['priority_targets'].extend(meta_recommendations.get('priority_targets', []))
+
+            # If meta database has a strategy, prioritize it
+            if meta_recommendations.get('strategy'):
+                counter_strategy['strategy_description'] = meta_recommendations['strategy'] + ". "
+                counter_strategy['confidence'] = 95  # High confidence for meta-based strategy
+
+        # Check for specific high-threat cookies
+        for cookie_name in enemy_cookie_names:
+            cookie_counter_info = get_cookie_counters(cookie_name)
+            if cookie_counter_info and cookie_counter_info['threat_level'] >= 8:
+                # Add counters for high-threat cookies
+                counter_strategy['recommended_cookies'].extend(cookie_counter_info['counters'][:3])
+                counter_strategy['priority_targets'].append(cookie_name)
+
+                # Add counter strategy notes
+                if counter_strategy['strategy_description']:
+                    counter_strategy['strategy_description'] += f" {cookie_counter_info['counter_strategy']}"
+                else:
+                    counter_strategy['strategy_description'] = cookie_counter_info['counter_strategy']
+
+        # ===== END META DATABASE INTEGRATION =====
+
         # Build dynamic counter cookie lists using ability data
         burst_damage_cookies = [c.name for c in self.all_cookies if c.skill_type == 'Damage' and c.rarity in ['Beast', 'Ancient', 'Legendary']]
         anti_heal_cookies = [c.name for c in self.all_cookies if c.anti_heal]
@@ -410,6 +449,18 @@ class CounterTeamGenerator:
         analysis = self.analyze_enemy_team(enemy_team)
         treasure_scores = []
 
+        # ===== META DATABASE TREASURE INTEGRATION =====
+        # Get treasure recommendations from meta database
+        enemy_cookie_names = [c.name for c in enemy_team.cookies]
+        meta_recommendations = recommend_counter_team(enemy_cookie_names)
+        meta_treasure_names = meta_recommendations.get('treasures', [])
+
+        # Boost scores for meta-recommended treasures
+        meta_treasure_boost = {}
+        for treasure_name in meta_treasure_names:
+            meta_treasure_boost[treasure_name] = 5.0  # Significant boost for meta recommendations
+        # ===== END META DATABASE TREASURE INTEGRATION =====
+
         for treasure in self.all_treasures:
             score = 0.0
             reasons = []
@@ -417,6 +468,11 @@ class CounterTeamGenerator:
             # Base tier score
             tier_base = {'S+': 10.0, 'S': 8.0, 'A': 6.0, 'B': 4.0, 'C': 2.0}
             score += tier_base.get(treasure.tier_ranking, 2.0)
+
+            # Add meta database boost if this treasure is recommended
+            if treasure.name in meta_treasure_boost:
+                score += meta_treasure_boost[treasure.name]
+                reasons.append("Meta-recommended for this matchup")
 
             # Strategy-based treasure recommendations
 

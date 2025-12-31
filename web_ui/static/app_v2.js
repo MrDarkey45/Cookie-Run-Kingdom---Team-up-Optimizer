@@ -217,7 +217,7 @@ function updateEnemySelectedCookiesDisplay() {
     const container = document.getElementById('enemySelectedCookies');
 
     if (enemySelectedCookies.length === 0) {
-        container.innerHTML = '<p class="empty-state">Select 5 cookies</p>';
+        container.innerHTML = '<p class="empty-state">Select 1-5 enemy cookies</p>';
         return;
     }
 
@@ -413,8 +413,8 @@ function toggleAccordion(header) {
 
 // ==================== COUNTER-TEAM GENERATION ====================
 async function generateCounterTeams() {
-    if (enemySelectedCookies.length !== 5) {
-        alert('Please select exactly 5 enemy cookies!');
+    if (enemySelectedCookies.length < 1 || enemySelectedCookies.length > 5) {
+        alert('Please select 1-5 enemy cookies!');
         return;
     }
 

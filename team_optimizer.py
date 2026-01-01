@@ -1373,19 +1373,46 @@ class TeamOptimizer:
         required_cookies: Optional[List[str]] = None
     ) -> List[Team]:
         """
-        Generate teams optimized for synergy bonuses.
+        Generate teams optimized for advanced synergy bonuses (NEW FEATURE).
 
-        This method prioritizes:
-        1. Special combos (Citrus Party, Silver Knighthood, etc.)
-        2. Synergy groups (Beast, Dragon, Ancient, Kingdom affiliations)
-        3. Element matching (focused elemental damage)
+        This method implements the "Synergy-Optimized" algorithm, which prioritizes
+        special team combos, synergy groups, and element matching to maximize the
+        60-point advanced synergy score system.
+
+        Three-Phase Strategy:
+        1. **Special Combos** (0-25 points): Build teams around named combos
+           - Citrus Party: Lemon + Orange + Lime + Grapefruit
+           - The Protector of the Golden City: Golden Cheese + Burnt/Smoked Cheese
+           - Silver Knighthood: Mercurial Knight + Silverbell
+           - Team Drizzle: Choco Drizzle + Green Tea Mousse + Pudding à la Mode
+           - The Deceitful Trio: Shadow Milk + Black Sapphire + Candy Apple
+
+        2. **Synergy Groups** (0-20 points): Prioritize same-affiliation cookies
+           - Beast-Yeast, Dragon, Ancient, Kingdom factions
+           - Citrus Squad, Sea Cookies, Winter Cookies, etc.
+
+        3. **Element Matching** (0-15 points): Focus on elemental teams
+           - 3+ same element = 15 points
+           - Includes all 11 elements: Light, Fire, Water, Ice, Earth, Grass, Wind,
+             Electricity, Darkness, Steel, Poison
 
         Args:
-            n: Number of teams to generate
-            required_cookies: Optional list of cookie names that MUST be in every team
+            n (int): Number of teams to generate (default: 100)
+                    Split across 3 strategies: n/3 special combos, n/3 groups, n/3 elements
+            required_cookies (Optional[List[str]]): Cookie names that must appear in every team
+                                                    Allows building synergy teams around favorites
 
         Returns:
-            List[Team]: Teams optimized for synergy
+            List[Team]: Teams sorted by synergy score, each with element_synergy_score,
+                       group_synergy_score, special_combo_score, and total_synergy_score properties
+
+        Example:
+            >>> optimizer.find_best_teams(n=10, method='synergy')
+            # Returns 10 teams optimized for synergy, may activate Citrus Party or Team Drizzle
+
+        Note:
+            - Synergy data loaded from cookie_synergy_data.json (currently covers 67/177 cookies)
+            - Teams without synergy data will have 0 synergy scores but still valid composition scores
         """
         teams = []
         used_combinations = set()

@@ -6,23 +6,28 @@
 Models/
 ├── 📄 Core Files (Main Application)
 │   ├── cookie_analysis.py          # Original cookie data analysis
-│   ├── team_optimizer.py           # Team optimization engine
+│   ├── team_optimizer.py           # Team optimization engine (with advanced synergy)
 │   ├── counter_team_generator.py   # Counter-team generation logic
+│   ├── guild_battle_optimizer.py   # ⭐ Guild Battle boss-specific teams
 │   ├── synergy_calculator.py       # Team synergy calculations
 │   │
-├── 📊 Data Files (CSV)
+├── 📊 Data Files (CSV & JSON)
 │   ├── crk-cookies.csv            # Main cookie database (177 cookies)
 │   ├── cookie_abilities.csv        # Cookie abilities & skills data
 │   ├── crk_treasures.csv          # Treasure database (21 treasures)
+│   ├── cookie_synergy_data.json   # ⭐ NEW! Element & synergy group data (67+ cookies)
 │   │
 ├── 🌐 Web Interface
 │   └── web_ui/
-│       ├── app.py                 # Flask backend API
+│       ├── app.py                 # Flask backend API (with max rarity filter)
 │       ├── templates/
-│       │   └── index.html         # Main web UI template
+│       │   ├── index_v2.html      # ⭐ Main web UI (v2 with synergy visualization)
+│       │   └── index.html         # Legacy v1 UI
 │       └── static/
-│           ├── app.js             # Frontend JavaScript
-│           └── styles.css         # UI styling
+│           ├── app_v2.js          # ⭐ Frontend JavaScript (synergy features)
+│           ├── styles_v2.css      # ⭐ UI styling (synergy animations)
+│           ├── app.js             # Legacy v1 JS
+│           └── styles.css         # Legacy v1 CSS
 │
 ├── 🧪 Tests & Utilities
 │   ├── tests/
@@ -38,8 +43,12 @@ Models/
     ├── docs/
     │   ├── ASCENDED_COOKIE_FIX.md       # Ascended cookie bug fix details
     │   ├── TREASURE_QUICKSTART.md       # Treasure system quick guide
-    │   └── TREASURE_INTEGRATION_SUMMARY.md  # Full treasure implementation
+    │   ├── TREASURE_INTEGRATION_SUMMARY.md  # Full treasure implementation
+    │   ├── WEB_UI_GUIDE.md              # Web interface user guide
+    │   ├── WEB_UI_FEATURES.md           # Web UI feature documentation
+    │   └── OPTIMIZATION_GUIDE.md        # Algorithm comparison guide
     │
+    ├── SYNERGY_DATA_GUIDE.md        # ⭐ NEW! Synergy data structure guide
     ├── README.md                    # Main project README
     └── PROJECT_OVERVIEW.md          # This file
 ```
@@ -50,13 +59,18 @@ Models/
 
 ### 1. **Team Optimization**
 - Generate optimal 5-cookie teams based on multiple strategies
-- Methods: Random Sampling, Greedy, Genetic Algorithm, Exhaustive Search
-- Scoring based on role diversity, position coverage, power, and synergy
+- Methods: Random Sampling, Greedy, Genetic Algorithm, **Synergy-Optimized** ⭐ NEW!, Exhaustive Search
+- Scoring based on role diversity, position coverage, power, and advanced synergy (60-point system)
+- **Advanced Synergy System** ⭐ NEW!:
+  - Element matching (0-15 points): 3+ same element bonus
+  - Synergy groups (0-20 points): Beast, Dragon, Ancient, Kingdom affiliations
+  - Special combos (0-25 points): Citrus Party, Team Drizzle, Silver Knighthood, etc.
 
 ### 2. **Counter-Team Generator**
 - Analyze enemy team composition
 - Identify weaknesses and generate counter-strategies
 - Recommend specific cookies and treasures to counter enemy teams
+- Includes advanced synergy scoring in counter recommendations
 
 ### 3. **Treasure System**
 - 21 treasures with stat bonuses and special effects
@@ -72,6 +86,23 @@ Models/
 - Role synergy matrix (tank + healer, DPS + support, etc.)
 - Element matching bonuses
 - Ability-based synergies (CC + Burst Damage, Heal + Shield, etc.)
+
+### 6. **Guild Battle Optimizer** ⭐ NEW!
+- Boss-specific team recommendations for 4 Guild Battle bosses
+- S-tier and A-tier cookie rankings per boss
+- Strategic guidance based on boss mechanics:
+  - Red Velvet Dragon: DEF shred, indirect damage
+  - Avatar of Destiny: ATK SPD buffs, shield providers
+  - Living Abyss: AOE damage, crowd control
+  - Machine-God of the Eternal Void: Water element focus
+- Optional S-tier prioritization toggle
+
+### 7. **Maximum Rarity Filter** ⭐ NEW!
+- Restrict team generation to specific rarity tiers
+- Options: Epic and Below, Legendary and Below, etc.
+- Apply to Team Optimizer and Counter-Team Generator
+- Perfect for F2P-friendly teams and challenge runs
+- Filters both cookie selection grids and team generation algorithms
 
 ---
 

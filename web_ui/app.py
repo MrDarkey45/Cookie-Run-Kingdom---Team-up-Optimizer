@@ -2,6 +2,24 @@
 Flask Web Application for Cookie Run: Kingdom Team Optimizer
 
 A beautiful web interface for visualizing and generating optimal cookie teams.
+
+Features:
+- Team Optimizer: Generate optimal teams using 5 different algorithms (Random, Greedy, Genetic, Synergy-Optimized, Exhaustive)
+- Counter-Team Generator: Build teams to counter specific enemy compositions
+- Guild Battle Optimizer: Get boss-specific team recommendations with S-tier cookies
+- Advanced Synergy System: Element matching, synergy groups, and special combo visualization
+- Maximum Rarity Filter: Restrict teams to specific rarity tiers (e.g., Epic and Below)
+- Bookmark System: Save and manage favorite team compositions
+- Real-time Filtering: Search by name, rarity, role, position
+
+Routes:
+- GET /: Main application (v2 UI with synergy visualization)
+- GET /v1: Legacy v1 UI
+- GET /api/cookies: List all available cookies with synergy data
+- POST /api/optimize: Generate optimal teams with optional max rarity filter
+- POST /api/counter-teams: Generate counter-teams with synergy scoring
+- POST /api/guild-battle: Generate boss-specific teams
+- GET /api/boss-info/<boss_name>: Get Guild Battle boss mechanics and strategies
 """
 
 from flask import Flask, render_template, request, jsonify
@@ -40,7 +58,8 @@ RARITY_COLORS = {
     'Common': '#808080'
 }
 
-# Rarity hierarchy for filtering
+# Rarity hierarchy for filtering (lowest to highest)
+# Used for Maximum Rarity Filter feature to restrict team generation
 RARITY_ORDER = [
     'Common',
     'Rare',
@@ -55,7 +74,27 @@ RARITY_ORDER = [
 ]
 
 def filter_cookies_by_max_rarity(cookies, max_rarity):
-    """Filter cookies to only include those at or below max_rarity."""
+    """
+    Filter cookies to only include those at or below the specified rarity tier.
+
+    This function enables the "Maximum Rarity Filter" feature, allowing users to create
+    F2P-friendly teams or challenge runs with rarity restrictions.
+
+    Args:
+        cookies (list[Cookie]): List of Cookie objects to filter
+        max_rarity (str): Maximum rarity tier to include (e.g., 'Epic', 'Legendary')
+                         Empty string or None returns all cookies
+
+    Returns:
+        list[Cookie]: Filtered list containing only cookies at or below max_rarity
+
+    Examples:
+        >>> filter_cookies_by_max_rarity(cookies, 'Epic')
+        # Returns only Common, Rare, Special, and Epic cookies
+
+        >>> filter_cookies_by_max_rarity(cookies, 'Legendary')
+        # Excludes Dragon, Ancient, and Beast cookies
+    """
     if not max_rarity:
         return cookies
 

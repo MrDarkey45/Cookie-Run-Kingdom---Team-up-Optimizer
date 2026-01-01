@@ -15,9 +15,11 @@ A comprehensive Python application for optimizing Cookie Run: Kingdom team compo
 ├── crk-cookies.csv             # Cookie database (177 cookies)
 ├── cookie_abilities.csv        # Cookie abilities & skills data
 ├── crk_treasures.csv           # Treasure database (21 treasures)
+├── cookie_synergy_data.json    # Element & synergy group data (67+ cookies)
 ├── cookie_analysis.py          # Data analysis and visualization
-├── team_optimizer.py           # Core optimization engine
+├── team_optimizer.py           # Core optimization engine (with synergy system)
 ├── counter_team_generator.py   # Counter-team generation
+├── guild_battle_optimizer.py   # Guild Battle boss-specific teams
 ├── synergy_calculator.py       # Team synergy calculations
 │
 ├── docs/                        # Documentation
@@ -90,11 +92,28 @@ Go to: **http://localhost:5000**
    - Click **"Generate Teams"**
    - Get teams built around your cookie!
 
-3. **Counter an Enemy Team**
+3. **Maximize Team Synergy** ⭐ NEW!
+   - Click the "Team Optimizer" tab
+   - Set Method to: **Synergy-Optimized**
+   - Click **"Generate Teams"**
+   - Watch animated synergy bars show element matching, group bonuses, and special combos!
+
+4. **Create F2P-Friendly Teams** ⭐ NEW!
+   - Set "Max Rarity" to: **Epic and Below**
+   - Click **"Generate Teams"**
+   - Get powerful teams without Legendary/Ancient/Beast cookies!
+
+5. **Counter an Enemy Team**
    - Click the "Counter-Team Generator" tab
    - Select 5 enemy cookies
    - Click **"Generate Counter-Teams"**
    - See recommended counters with strategies!
+
+6. **Guild Battle Optimization** ⭐
+   - Click the "Guild Battle" tab
+   - Select your boss (Red Velvet Dragon, Avatar of Destiny, Living Abyss, Machine-God)
+   - Choose cookies or let the optimizer suggest S-tier picks
+   - Get boss-specific team recommendations with strategies!
 
 **That's it!** You're ready to optimize! 🎉
 
@@ -138,12 +157,13 @@ for team in best_teams:
 
 ## ✨ Features
 
-### **🧠 4 Optimization Algorithms**
+### **🧠 5 Optimization Algorithms**
 
 1. **Random Sampling** - Fast exploration (0.01s for 1000 teams)
 2. **Greedy Algorithm** - Power-focused selection
 3. **Genetic Algorithm** ⭐ - Best results (92-96/100 scores)
-4. **Exhaustive Search** - Guaranteed optimal (with 3+ required cookies)
+4. **Synergy-Optimized** ⭐ NEW! - Maximizes element matching, synergy groups, and special combos
+5. **Exhaustive Search** - Guaranteed optimal (with 3+ required cookies)
 
 ### **⚡ Hybrid Scoring System**
 
@@ -171,13 +191,47 @@ Create teams featuring YOUR favorite cookies:
 - **Power Score** (0-35 points) - Cookie strength
 - **Bonus Modifiers** (0-10 points) - Tank, healer, DPS bonuses
 
+### **🌟 Advanced Synergy System** ⭐ NEW!
+
+Teams are scored on **60-point advanced synergy scale**:
+
+- **Element Synergy** (0-15 points) - 3+ cookies with same element (Light, Fire, Water, Ice, Earth, Grass, Wind, Electricity, Darkness, Steel, Poison)
+- **Synergy Groups** (0-20 points) - Cookies from same affiliation (Beast, Dragon, Ancient, Kingdom factions, Citrus Squad, etc.)
+- **Special Combos** (0-25 points) - Activate powerful team combos:
+  - **Citrus Party** - Lemon + Orange + Lime + Grapefruit
+  - **The Protector of the Golden City** - Golden Cheese + Burnt Cheese + Smoked Cheese
+  - **Silver Knighthood** - Mercurial Knight + Silverbell
+  - **Team Drizzle** - Choco Drizzle + Green Tea Mousse + Pudding à la Mode
+  - **The Deceitful Trio** - Shadow Milk + Black Sapphire + Candy Apple
+
+**Visual Synergy Breakdown** - All team results show color-coded progress bars displaying element, group, and combo synergy scores with animated gradients.
+
+### **🎯 Maximum Rarity Filter** ⭐ NEW!
+
+Restrict team generation to specific rarity tiers:
+
+- **Epic and Below** - Only Common, Rare, Special, and Epic cookies
+- **Legendary and Below** - Exclude Dragon, Ancient, and Beast cookies
+- **Filter applies to:**
+  - Cookie selection grids (Team Optimizer and Counter-Team tabs)
+  - Team generation algorithms
+  - Counter-team recommendations
+
+Perfect for:
+- F2P-friendly team compositions
+- Challenge runs with rarity restrictions
+- Testing non-meta cookie combinations
+
 ### **🌐 Beautiful Web Interface**
 
 - Modern gradient design with glassmorphism
-- Interactive cookie selection
-- Real-time search filtering
-- Visual team cards
+- Interactive cookie selection with element badges ⭐ NEW!
+- Real-time search filtering by name, rarity, role, position
+- Visual team cards with animated synergy breakdown ⭐ NEW!
+- Rarity filter dropdown (Epic and Below, Legendary and Below, etc.) ⭐ NEW!
 - Responsive layout
+- Bookmark system for saving favorite teams ⭐
+- Export teams to text files ⭐
 
 ### **📈 Data Analysis**
 
@@ -320,22 +374,27 @@ cd web_ui && python3 app.py
 
 ## 🔬 Algorithm Performance
 
-| Method | Teams/Time | Best Score | Speed | Use Case |
-|--------|------------|-----------|-------|----------|
-| Random | 1000 teams | 85-89/100 | ⚡⚡⚡ | Exploration |
-| Greedy | 1000 teams | 88-91/100 | ⚡⚡⚡ | Power-focus |
-| Genetic | 100 gen | **92-96/100** | ⚡⚡ | **Best overall** |
-| Exhaustive | All combos | 96-99/100 | Varies | 3+ required |
+| Method | Teams/Time | Best Score | Synergy | Speed | Use Case |
+|--------|------------|-----------|---------|-------|----------|
+| Random | 1000 teams | 85-89/100 | Variable | ⚡⚡⚡ | Exploration |
+| Greedy | 1000 teams | 88-91/100 | Low | ⚡⚡⚡ | Power-focus |
+| Genetic | 100 gen | **92-96/100** | Medium | ⚡⚡ | **Best overall** |
+| Synergy | 50-100 gen | 90-95/100 | **High** | ⚡⚡ | **Special combos** ⭐ NEW! |
+| Exhaustive | All combos | 96-99/100 | Varies | Varies | 3+ required |
 
 ---
 
 ## 💡 Pro Tips
 
 1. **Use Genetic Algorithm** for consistent 92-96/100 scores
-2. **Select 1-3 cookies** for build-around scenarios
-3. **Exhaustive search** only with 3+ required cookies
-4. **Web UI** provides best user experience
-5. **Export teams** to JSON for later comparison
+2. **Use Synergy-Optimized** to activate special combos (Citrus Party, Team Drizzle, etc.) ⭐ NEW!
+3. **Select 1-3 cookies** for build-around scenarios
+4. **Exhaustive search** only with 3+ required cookies
+5. **Web UI** provides best user experience with visual synergy breakdown ⭐ NEW!
+6. **Export teams** to JSON for later comparison
+7. **Try "Epic and Below" filter** for F2P-friendly team compositions ⭐ NEW!
+8. **Watch for element badges** - 3+ same element = 15 synergy points ⭐ NEW!
+9. **Guild Battle tab** has boss-specific S-tier recommendations ⭐
 
 ---
 
@@ -345,18 +404,10 @@ cd web_ui && python3 app.py
   - Name, Rarity, Role, Position
   - Empty columns for future data: skill_description, toppings, cookie_element
 
----
-
-## 🚧 Future Enhancements
-
-- [ ] Counter-team generator (Phase 2)
-- [ ] Synergy calculator (Phase 3)
-- [ ] Skill description parsing
-- [ ] Element effectiveness system
-- [ ] Battle simulator
-- [ ] User authentication (web UI)
-- [ ] Team sharing
-- [ ] Mobile app
+- **cookie_synergy_data.json** ⭐ NEW! - 67+ cookies with:
+  - Element types (Light, Fire, Water, Ice, Earth, Grass, Wind, Electricity, Darkness, Steel, Poison)
+  - Synergy groups (Beast, Dragon, Ancient, Kingdom affiliations, special squads)
+  - Special combo participants (5 defined combos)
 
 ---
 

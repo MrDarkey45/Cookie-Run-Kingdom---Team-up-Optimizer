@@ -771,7 +771,12 @@ class CounterTeamGenerator:
             score += 5
 
         # Synergy bonus (15 points max)
-        if hasattr(counter_team, 'synergy_score'):
+        # Use new total_synergy_score if available, otherwise fall back to legacy synergy_score
+        if hasattr(counter_team, 'total_synergy_score'):
+            # New advanced synergy system (0-60 scale)
+            score += (counter_team.total_synergy_score / 60) * 15
+        elif hasattr(counter_team, 'synergy_score'):
+            # Legacy synergy system (0-100 scale)
             score += (counter_team.synergy_score / 100) * 15
 
         return min(score, max_score)

@@ -163,13 +163,14 @@ class GuildBattleOptimizer:
         """
         return GUILD_BOSSES.get(boss_name, {})
 
-    def score_cookie_for_boss(self, cookie: Cookie, boss_name: str) -> float:
+    def score_cookie_for_boss(self, cookie: Cookie, boss_name: str, prioritize_s_tier: bool = True) -> float:
         """
         Score a cookie's effectiveness against a specific boss.
 
         Args:
             cookie: Cookie to evaluate
             boss_name: Name of the boss
+            prioritize_s_tier: If True, give massive bonus to S-tier cookies
 
         Returns:
             float: Score from 0-100 (higher is better)
@@ -180,13 +181,13 @@ class GuildBattleOptimizer:
 
         base_score = 50.0
 
-        # S-tier cookies get massive bonus
+        # S-tier cookies get massive bonus (if prioritization enabled)
         if cookie.name in boss['s_tier_cookies']:
-            base_score += 40.0
+            base_score += 40.0 if prioritize_s_tier else 15.0
 
         # A-tier cookies get good bonus
         elif cookie.name in boss['a_tier_cookies']:
-            base_score += 25.0
+            base_score += 25.0 if prioritize_s_tier else 10.0
 
         # Check preferred attributes
         for attr in boss['preferred_attributes']:
@@ -207,7 +208,8 @@ class GuildBattleOptimizer:
         self,
         boss_name: str,
         required_cookies: Optional[List[str]] = None,
-        num_teams: int = 5
+        num_teams: int = 5,
+        prioritize_s_tier: bool = True
     ) -> List[Dict]:
         """
         Generate optimized teams for a Guild Battle boss.
@@ -216,6 +218,7 @@ class GuildBattleOptimizer:
             boss_name: Name of the boss to counter
             required_cookies: List of cookie names that must be included
             num_teams: Number of team variations to generate
+            prioritize_s_tier: If True, heavily prioritize S-tier cookies for this boss
 
         Returns:
             list: List of team dictionaries with scores and strategies
@@ -236,7 +239,11 @@ class GuildBattleOptimizer:
         cookie_scores = []
         for cookie in self.all_cookies:
             if cookie not in required:
-                score = self.score_cookie_for_boss(cookie, boss_name)
+                # Skip S-tier cookies if prioritization is disabled
+                if not prioritize_s_tier and cookie.name in boss['s_tier_cookies']:
+                    continue
+
+                score = self.score_cookie_for_boss(cookie, boss_name, prioritize_s_tier)
                 cookie_scores.append((cookie, score))
 
         # Sort by score (highest first)
@@ -281,7 +288,7 @@ class GuildBattleOptimizer:
             # Create team and score it
             try:
                 team = Team(team_cookies)
-                team_score = self.score_team_for_boss(team, boss_name)
+                team_score = self.score_team_for_boss(team, boss_name, prioritize_s_tier)
 
                 teams.append({
                     'team': team,
@@ -297,13 +304,14 @@ class GuildBattleOptimizer:
 
         return teams[:num_teams]
 
-    def score_team_for_boss(self, team: Team, boss_name: str) -> float:
+    def score_team_for_boss(self, team: Team, boss_name: str, prioritize_s_tier: bool = True) -> float:
         """
         Score a team's effectiveness against a boss.
 
         Args:
             team: Team to evaluate
             boss_name: Name of the boss
+            prioritize_s_tier: If True, give extra bonus to S-tier cookies
 
         Returns:
             float: Team score (0-100)
@@ -311,15 +319,15 @@ class GuildBattleOptimizer:
         boss = GUILD_BOSSES.get(boss_name, {})
 
         # Average individual cookie scores
-        cookie_scores = [self.score_cookie_for_boss(c, boss_name) for c in team.cookies]
+        cookie_scores = [self.score_cookie_for_boss(c, boss_name, prioritize_s_tier) for c in team.cookies]
         avg_score = sum(cookie_scores) / len(cookie_scores)
 
         # Bonus for team synergy
         synergy_bonus = min(10.0, team.synergy_score / 5)
 
-        # Bonus for having S-tier cookies
+        # Bonus for having S-tier cookies (only if prioritization enabled)
         s_tier_count = sum(1 for c in team.cookies if c.name in boss['s_tier_cookies'])
-        s_tier_bonus = s_tier_count * 5.0
+        s_tier_bonus = (s_tier_count * 5.0) if prioritize_s_tier else (s_tier_count * 2.0)
 
         # Check attribute coverage
         coverage_bonus = 0

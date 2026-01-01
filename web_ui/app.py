@@ -40,6 +40,32 @@ RARITY_COLORS = {
     'Common': '#808080'
 }
 
+# Rarity hierarchy for filtering
+RARITY_ORDER = [
+    'Common',
+    'Rare',
+    'Special',
+    'Epic',
+    'Super Epic',
+    'Legendary',
+    'Dragon',
+    'Ancient',
+    'Ancient (Ascended)',
+    'Beast'
+]
+
+def filter_cookies_by_max_rarity(cookies, max_rarity):
+    """Filter cookies to only include those at or below max_rarity."""
+    if not max_rarity:
+        return cookies
+
+    try:
+        max_index = RARITY_ORDER.index(max_rarity)
+        return [c for c in cookies if RARITY_ORDER.index(c.rarity) <= max_index]
+    except ValueError:
+        # If rarity not in list, return all cookies
+        return cookies
+
 
 @app.route('/')
 def index():
@@ -62,6 +88,9 @@ def get_cookies():
             'rarity': cookie.rarity,
             'role': cookie.role,
             'position': cookie.position,
+            'element': cookie.element if hasattr(cookie, 'element') else None,
+            'synergyGroups': cookie.synergy_groups if hasattr(cookie, 'synergy_groups') else [],
+            'specialCombos': cookie.special_combos if hasattr(cookie, 'special_combos') else [],
             'power': round(cookie.get_power_score(), 2),
             'color': RARITY_COLORS.get(cookie.rarity, '#808080'),
             'image_url': get_cookie_image_url(cookie.name)
@@ -117,7 +146,8 @@ def optimize_teams():
     num_candidates = data.get('numCandidates', 1000)
     top_n = data.get('topN', 5)
     required_cookies = data.get('requiredCookies', [])
-    cookie_stats = data.get('cookieStats', {})  # New: cookie stats
+    cookie_stats = data.get('cookieStats', {})
+    max_rarity = data.get('maxRarity', '')
 
     # Validate inputs
     if num_candidates > 10000:
@@ -131,6 +161,11 @@ def optimize_teams():
         if cookie_stats:
             optimizer.update_cookie_stats(cookie_stats)
 
+        # Apply max rarity filter if specified
+        original_cookies = optimizer.all_cookies
+        if max_rarity:
+            optimizer.all_cookies = filter_cookies_by_max_rarity(original_cookies, max_rarity)
+
         # Generate teams
         teams = optimizer.find_best_teams(
             n=top_n,
@@ -138,6 +173,10 @@ def optimize_teams():
             num_candidates=num_candidates,
             required_cookies=required_cookies if required_cookies else None
         )
+
+        # Restore original cookies list
+        if max_rarity:
+            optimizer.all_cookies = original_cookies
 
         # Convert to JSON-friendly format
         teams_data = []
@@ -149,7 +188,14 @@ def optimize_teams():
                 'roleDistribution': team.get_role_distribution(),
                 'positionDistribution': team.get_position_distribution(),
                 'hasTank': team.has_tank(),
-                'hasHealer': team.has_healer()
+                'hasHealer': team.has_healer(),
+                # Add advanced synergy data
+                'advancedSynergy': {
+                    'totalSynergy': round(team.total_synergy_score, 2),
+                    'elementSynergy': round(team.element_synergy_score, 2),
+                    'groupSynergy': round(team.group_synergy_score, 2),
+                    'specialCombo': round(team.special_combo_score, 2)
+                }
             }
 
             for cookie in team.cookies:
@@ -158,6 +204,9 @@ def optimize_teams():
                     'rarity': cookie.rarity,
                     'role': cookie.role,
                     'position': cookie.position,
+                    'element': cookie.element if hasattr(cookie, 'element') else None,
+                    'synergyGroups': cookie.synergy_groups if hasattr(cookie, 'synergy_groups') else [],
+                    'specialCombos': cookie.special_combos if hasattr(cookie, 'special_combos') else [],
                     'power': round(cookie.get_power_score(), 2),
                     'color': RARITY_COLORS.get(cookie.rarity, '#808080'),
                     'image_url': get_cookie_image_url(cookie.name),
@@ -221,6 +270,7 @@ def generate_counter_teams():
         num_counter_teams = data.get('numCounterTeams', 5)
         method = data.get('method', 'random')
         required_cookies = data.get('requiredCookies', [])
+        max_rarity = data.get('maxRarity', '')
 
         # Validate enemy team
         if not enemy_cookie_names or len(enemy_cookie_names) < 1 or len(enemy_cookie_names) > 5:
@@ -241,6 +291,11 @@ def generate_counter_teams():
         weaknesses = counter_generator.identify_weaknesses(enemy_team)
         counter_strategy = counter_generator.generate_counter_strategies(enemy_team)
 
+        # Apply max rarity filter if specified
+        original_cookies = counter_generator.all_cookies
+        if max_rarity:
+            counter_generator.all_cookies = filter_cookies_by_max_rarity(original_cookies, max_rarity)
+
         # Generate counter-teams
         counter_teams = counter_generator.find_counter_teams(
             enemy_team,
@@ -248,6 +303,10 @@ def generate_counter_teams():
             method=method,
             required_cookies=required_cookies if required_cookies else None
         )
+
+        # Restore original cookies list
+        if max_rarity:
+            counter_generator.all_cookies = original_cookies
 
         # Format response
         counter_teams_data = []
@@ -265,7 +324,7 @@ def generate_counter_teams():
                     'element': cookie.element if hasattr(cookie, 'element') and cookie.element else 'N/A'
                 })
 
-            # Get synergy breakdown if available
+            # Get synergy breakdown if available (legacy system)
             synergy_data = {}
             if hasattr(team, 'synergy_breakdown') and team.synergy_breakdown:
                 synergy_data = {
@@ -279,6 +338,14 @@ def generate_counter_teams():
                     }
                 }
 
+            # Get advanced synergy data (new system)
+            advanced_synergy = {
+                'totalSynergy': round(team.total_synergy_score, 2),
+                'elementSynergy': round(team.element_synergy_score, 2),
+                'groupSynergy': round(team.group_synergy_score, 2),
+                'specialCombo': round(team.special_combo_score, 2)
+            }
+
             counter_teams_data.append({
                 'cookies': team_cookies,
                 'score': round(team.composition_score, 2),
@@ -290,6 +357,7 @@ def generate_counter_teams():
                 'roleDistribution': team.get_role_distribution(),
                 'positionDistribution': team.get_position_distribution(),
                 'synergy': synergy_data,
+                'advancedSynergy': advanced_synergy,
                 'recommendedTreasures': counter_info.get('recommended_treasures', [])
             })
 
@@ -337,6 +405,7 @@ def generate_guild_battle_teams():
         boss_name = data.get('boss')
         required_cookie_names = data.get('requiredCookies', [])
         num_teams = data.get('numTeams', 5)
+        prioritize_s_tier = data.get('prioritizeSTier', True)
 
         # Validate boss
         if not boss_name:
@@ -351,7 +420,8 @@ def generate_guild_battle_teams():
         teams_data = guild_optimizer.generate_guild_battle_team(
             boss_name=boss_name,
             required_cookies=required_cookie_names,
-            num_teams=num_teams
+            num_teams=num_teams,
+            prioritize_s_tier=prioritize_s_tier
         )
 
         # Format response
@@ -377,7 +447,13 @@ def generate_guild_battle_teams():
                 'score': round(team_info['score'], 2),
                 'strategy': team_info['strategy'],
                 'roleDistribution': team.get_role_distribution(),
-                'positionDistribution': team.get_position_distribution()
+                'positionDistribution': team.get_position_distribution(),
+                'advancedSynergy': {
+                    'totalSynergy': round(team.total_synergy_score, 2),
+                    'elementSynergy': round(team.element_synergy_score, 2),
+                    'groupSynergy': round(team.group_synergy_score, 2),
+                    'specialCombo': round(team.special_combo_score, 2)
+                }
             })
 
         return jsonify({

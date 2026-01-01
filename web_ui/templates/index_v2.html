@@ -12,6 +12,9 @@
         <!-- Header -->
         <header class="app-header">
             <h1>🍪 Cookie Run: Kingdom Team Optimizer</h1>
+            <button id="toggleBookmarksBtn" class="btn-secondary" style="padding: 8px 16px;">
+                ⭐ Bookmarks (<span id="bookmarkCount">0</span>)
+            </button>
         </header>
 
         <!-- Tab Navigation -->
@@ -49,6 +52,7 @@
                             <option value="random">Random Sampling</option>
                             <option value="greedy">Greedy (Power-Focused)</option>
                             <option value="genetic" selected>Genetic Algorithm ⭐ (Best)</option>
+                            <option value="synergy">Synergy-Optimized 🌟 (New!)</option>
                             <option value="exhaustive">Exhaustive Search</option>
                         </select>
                         <small id="methodDescription" style="display: block; margin-top: 8px; color: rgba(255,255,255,0.7); font-size: 0.85em; line-height: 1.4;">
@@ -63,7 +67,22 @@
 
                     <div class="setting-group">
                         <label for="topN">Teams</label>
-                        <input type="number" id="topN" class="input-field" value="5" min="1" max="50">
+                        <input type="number" id="topN" class="input-field" value="5" min="1" max="10">
+                    </div>
+
+                    <div class="setting-group">
+                        <label for="maxRarity">Max Rarity</label>
+                        <select id="maxRarity" class="input-field">
+                            <option value="">All Rarities</option>
+                            <option value="Common">Common and Below</option>
+                            <option value="Rare">Rare and Below</option>
+                            <option value="Epic">Epic and Below</option>
+                            <option value="Super Epic">Super Epic and Below</option>
+                            <option value="Special">Special and Below</option>
+                            <option value="Legendary">Legendary and Below</option>
+                            <option value="Dragon">Dragon and Below</option>
+                            <option value="Ancient">Ancient and Below</option>
+                        </select>
                     </div>
 
                     <div class="setting-group checkbox-group">
@@ -80,8 +99,17 @@
                         <p class="empty-state">None selected</p>
                     </div>
 
-                    <button id="optimizeBtn" class="btn-primary">
-                        🚀 Optimize
+                    <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+                        <button id="optimizeBtn" class="btn-primary" style="flex: 1;">
+                            🚀 Optimize
+                        </button>
+                        <button id="resetOptimizerBtn" class="btn-secondary" style="flex: 0.5;">
+                            🔄 Reset
+                        </button>
+                    </div>
+
+                    <button id="bookmarkOptimizerBtn" class="btn-secondary" style="width: 100%; display: none;">
+                        ⭐ Bookmark Teams
                     </button>
                 </aside>
 
@@ -147,7 +175,22 @@
 
                     <div class="setting-group">
                         <label for="numCounterTeams">Teams</label>
-                        <input type="number" id="numCounterTeams" class="input-field" value="5" min="1" max="20">
+                        <input type="number" id="numCounterTeams" class="input-field" value="5" min="1" max="10">
+                    </div>
+
+                    <div class="setting-group">
+                        <label for="counterMaxRarity">Max Rarity</label>
+                        <select id="counterMaxRarity" class="input-field">
+                            <option value="">All Rarities</option>
+                            <option value="Common">Common and Below</option>
+                            <option value="Rare">Rare and Below</option>
+                            <option value="Epic">Epic and Below</option>
+                            <option value="Super Epic">Super Epic and Below</option>
+                            <option value="Special">Special and Below</option>
+                            <option value="Legendary">Legendary and Below</option>
+                            <option value="Dragon">Dragon and Below</option>
+                            <option value="Ancient">Ancient and Below</option>
+                        </select>
                     </div>
 
                     <hr class="divider">
@@ -157,8 +200,17 @@
                         <p class="empty-state">Select 1-5 enemy cookies</p>
                     </div>
 
-                    <button id="generateCounterBtn" class="btn-primary">
-                        ⚔️ Generate
+                    <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+                        <button id="generateCounterBtn" class="btn-primary" style="flex: 1;">
+                            ⚔️ Generate
+                        </button>
+                        <button id="resetCounterBtn" class="btn-secondary" style="flex: 0.5;">
+                            🔄 Reset
+                        </button>
+                    </div>
+
+                    <button id="bookmarkCounterBtn" class="btn-secondary" style="width: 100%; display: none;">
+                        ⭐ Bookmark Teams
                     </button>
                 </aside>
 
@@ -215,6 +267,16 @@
                         <input type="number" id="guildTeamsCount" class="input-field" value="5" min="1" max="10">
                     </div>
 
+                    <div class="setting-group checkbox-group">
+                        <label>
+                            <input type="checkbox" id="prioritizeSTier" checked>
+                            <span>Include S-Tier Cookies</span>
+                        </label>
+                        <small style="display: block; margin-top: 5px; color: rgba(255,255,255,0.6); font-size: 0.8em;">
+                            When unchecked, S-Tier cookies will be completely excluded from team generation
+                        </small>
+                    </div>
+
                     <hr class="divider">
 
                     <h4>Required Cookies (Optional)</h4>
@@ -222,8 +284,17 @@
                         <p class="empty-state">None selected</p>
                     </div>
 
-                    <button id="generateGuildBtn" class="btn-primary">
-                        🏰 Generate Teams
+                    <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+                        <button id="generateGuildBtn" class="btn-primary" style="flex: 1;">
+                            🏰 Generate
+                        </button>
+                        <button id="resetGuildBtn" class="btn-secondary" style="flex: 0.5;">
+                            🔄 Reset
+                        </button>
+                    </div>
+
+                    <button id="bookmarkGuildBtn" class="btn-secondary" style="width: 100%; display: none;">
+                        ⭐ Bookmark Teams
                     </button>
 
                     <hr class="divider">
@@ -372,6 +443,17 @@
         </div>
     </div>
 
-    <script src="{{ url_for('static', filename='app_v2.js') }}?v=3.0"></script>
+    <!-- Bookmarks Panel -->
+    <div id="bookmarksPanel" class="bookmarks-panel">
+        <div class="bookmarks-header">
+            <h3>⭐ Bookmarked Teams</h3>
+            <button class="close-btn" onclick="closeBookmarksPanel()">×</button>
+        </div>
+        <div id="bookmarksList" class="bookmarks-list">
+            <p class="empty-state">No bookmarked teams yet. Generate teams and click "⭐ Bookmark" to save them here!</p>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='app_v2.js') }}?v=4.0"></script>
 </body>
 </html>

@@ -186,7 +186,10 @@ class Cookie:
         indirect_damage: bool = False,
         attack_speed_buff: bool = False,
         shield_provider: bool = False,
-        debuff_heavy: bool = False
+        debuff_heavy: bool = False,
+        # Synergy system attributes
+        synergy_groups: Optional[List[str]] = None,
+        special_combos: Optional[List[str]] = None
     ):
         """
         Initialize a Cookie instance.
@@ -218,6 +221,8 @@ class Cookie:
             attack_speed_buff: Cookie provides ATK SPD buffs (for Guild Battle)
             shield_provider: Cookie provides shields to allies (for Guild Battle)
             debuff_heavy: Cookie relies heavily on debuffs (for Guild Battle)
+            synergy_groups: List of synergy groups cookie belongs to (Beast, Dragon, Ancient, Citrus Squad, etc.)
+            special_combos: List of special combo teams cookie can participate in
         """
         self.name = name
         self.rarity = rarity
@@ -249,6 +254,10 @@ class Cookie:
         self.attack_speed_buff = attack_speed_buff
         self.shield_provider = shield_provider
         self.debuff_heavy = debuff_heavy
+
+        # Synergy system attributes
+        self.synergy_groups = synergy_groups if synergy_groups else []
+        self.special_combos = special_combos if special_combos else []
 
     def get_power_score(self) -> float:
         """
@@ -323,7 +332,9 @@ class Cookie:
             'cookie_level': self.cookie_level,
             'skill_level': self.skill_level,
             'topping_quality': self.topping_quality,
-            'power_score': round(self.get_power_score(), 2)
+            'power_score': round(self.get_power_score(), 2),
+            'synergy_groups': self.synergy_groups,
+            'special_combos': self.special_combos
         }
 
 
@@ -592,6 +603,118 @@ class Team:
         """Get count of each position in the team."""
         return dict(Counter(cookie.position for cookie in self.cookies))
 
+    @property
+    def element_synergy_score(self) -> float:
+        """
+        Calculate bonus for element matching (0-15 points).
+        Rewards teams with focused elemental damage.
+        """
+        element_counts = {}
+        for cookie in self.cookies:
+            if cookie.element:
+                element_counts[cookie.element] = element_counts.get(cookie.element, 0) + 1
+
+        if not element_counts:
+            return 0.0
+
+        max_same_element = max(element_counts.values())
+
+        if max_same_element >= 3:
+            return 15.0  # 3+ same element = strong elemental focus
+        elif max_same_element == 2:
+            return 7.0   # 2 same element = moderate focus
+        else:
+            return 0.0   # Diverse elements = no bonus
+
+    @property
+    def group_synergy_score(self) -> float:
+        """
+        Calculate bonus for synergy group matching (0-20 points).
+        Rewards teams from the same group (Beast, Dragon, Ancient, etc.)
+        """
+        group_counts = {}
+        for cookie in self.cookies:
+            if cookie.synergy_groups:
+                for group in cookie.synergy_groups:
+                    group_counts[group] = group_counts.get(group, 0) + 1
+
+        total_bonus = 0.0
+        for group, count in group_counts.items():
+            if count >= 3:
+                total_bonus += 12.0  # 3+ from same group = strong synergy
+            elif count == 2:
+                total_bonus += 5.0   # 2 from same group = moderate synergy
+
+        return min(20.0, total_bonus)  # Cap at 20 points
+
+    @property
+    def special_combo_score(self) -> float:
+        """
+        Detect special combo activation (0-25 points).
+        Recognizes named team combos like Citrus Party, Silver Knighthood, etc.
+        """
+        combo_bonuses = {
+            'Citrus Party': {
+                'required': {'Lemon Cookie'},
+                'optional': {'Orange Cookie', 'Lime Cookie', 'Grapefruit Cookie'},
+                'min_members': 2,
+                'bonus': 20.0
+            },
+            'The Protector of the Golden City': {
+                'required': {'Golden Cheese Cookie'},
+                'optional': {'Burnt Cheese Cookie', 'Smoked Cheese Cookie'},
+                'min_members': 2,
+                'bonus': 15.0
+            },
+            'Silver Knighthood': {
+                'required': {'Mercurial Knight Cookie', 'Silverbell Cookie'},
+                'bonus': 25.0
+            },
+            'Team Drizzle': {
+                'required': {'Choco Drizzle Cookie', 'Green Tea Mousse Cookie', 'Pudding à la Mode Cookie'},
+                'bonus': 25.0
+            },
+            'The Deceitful Trio': {
+                'required': {'Shadow Milk Cookie', 'Black Sapphire Cookie', 'Candy Apple Cookie'},
+                'bonus': 25.0
+            }
+        }
+
+        cookie_names = {c.name for c in self.cookies}
+        max_bonus = 0.0
+
+        for combo_name, combo_data in combo_bonuses.items():
+            required = combo_data['required']
+
+            # Check if all required cookies are present
+            if required.issubset(cookie_names):
+                # Check for minimum members requirement (for combos with optional members)
+                if 'min_members' in combo_data:
+                    optional = combo_data.get('optional', set())
+                    all_members = required | optional
+                    present_members = cookie_names & all_members
+                    if len(present_members) >= combo_data['min_members']:
+                        max_bonus = max(max_bonus, combo_data['bonus'])
+                else:
+                    # All required present, activate bonus
+                    max_bonus = max(max_bonus, combo_data['bonus'])
+
+        return max_bonus
+
+    @property
+    def total_synergy_score(self) -> float:
+        """
+        Total synergy score from elements, groups, and special combos (0-60 points max).
+        - Element synergy: 0-15
+        - Group synergy: 0-20
+        - Special combos: 0-25
+        """
+        return (
+            self.element_synergy_score +
+            self.group_synergy_score +
+            self.special_combo_score
+        )
+
     def has_tank(self) -> bool:
         """Check if team has a tank (Defense or Charge in Front)."""
         return any(
@@ -651,6 +774,14 @@ class Team:
                 }
             }
 
+        # Always include new synergy scores
+        result['advanced_synergy'] = {
+            'total_synergy': round(self.total_synergy_score, 2),
+            'element_synergy': round(self.element_synergy_score, 2),
+            'group_synergy': round(self.group_synergy_score, 2),
+            'special_combo': round(self.special_combo_score, 2)
+        }
+
         return result
 
 
@@ -680,6 +811,25 @@ class TeamOptimizer:
         print(f"Loaded {len(self.all_cookies)} cookies for team optimization")
         print(f"Loaded {len(self.all_treasures)} treasures")
 
+    def _load_synergy_data(self) -> Dict:
+        """
+        Load synergy data from JSON file.
+
+        Returns:
+            Dict: Synergy data with elements, synergy_groups, and special_combos
+        """
+        try:
+            import os
+            synergy_path = os.path.join(self.base_dir, 'cookie_synergy_data.json')
+            with open(synergy_path, 'r') as f:
+                return json.load(f)
+        except FileNotFoundError:
+            print("Warning: cookie_synergy_data.json not found. Cookies will have no synergy data.")
+            return {'elements': {}, 'synergy_groups': {}, 'special_combos': {}}
+        except json.JSONDecodeError as e:
+            print(f"Error parsing synergy data: {e}")
+            return {'elements': {}, 'synergy_groups': {}, 'special_combos': {}}
+
     def load_cookies(self) -> List[Cookie]:
         """
         Convert DataFrame to Cookie objects with ability data merged.
@@ -688,6 +838,9 @@ class TeamOptimizer:
             List[Cookie]: List of all available cookies
         """
         cookies = []
+
+        # Load synergy data
+        synergy_data = self._load_synergy_data()
 
         # Load ability data from separate CSV
         try:
@@ -711,10 +864,19 @@ class TeamOptimizer:
             if pd.isna(row['cookie_name']) or pd.isna(row['cookie_rarity']):
                 continue
 
-            # Extract element if available
+            # Extract element from CSV first, then override with synergy data if available
             element = None
             if 'cookie_element' in row and not pd.isna(row['cookie_element']) and row['cookie_element'] != 'N/A':
                 element = row['cookie_element']
+
+            # Override with synergy data if available
+            cookie_name = row['cookie_name']
+            if cookie_name in synergy_data.get('elements', {}):
+                element = synergy_data['elements'][cookie_name]
+
+            # Get synergy groups and special combos
+            synergy_groups = synergy_data.get('synergy_groups', {}).get(cookie_name, [])
+            special_combos = synergy_data.get('special_combos', {}).get(cookie_name, [])
 
             # Extract ability attributes if available
             skill_name = row.get('skill_name') if 'skill_name' in row and not pd.isna(row.get('skill_name')) else None
@@ -786,7 +948,9 @@ class TeamOptimizer:
                 indirect_damage=indirect_damage,
                 attack_speed_buff=attack_speed_buff,
                 shield_provider=shield_provider,
-                debuff_heavy=debuff_heavy
+                debuff_heavy=debuff_heavy,
+                synergy_groups=synergy_groups,
+                special_combos=special_combos
             )
             cookies.append(cookie)
 
@@ -934,8 +1098,8 @@ class TeamOptimizer:
 
         Args:
             n: Number of top teams to return
-            method: Generation method ('random', 'greedy', 'genetic', or 'exhaustive')
-            num_candidates: Number of candidate teams to generate (for random/greedy/genetic methods)
+            method: Generation method ('random', 'greedy', 'genetic', 'synergy', or 'exhaustive')
+            num_candidates: Number of candidate teams to generate (for random/greedy/genetic/synergy methods)
             required_cookies: Optional list of cookie names that MUST be in the team
 
         Returns:
@@ -947,16 +1111,22 @@ class TeamOptimizer:
             teams = self._generate_greedy_teams(n * 10, required_cookies=required_cookies)
         elif method == 'genetic':
             teams = self._generate_genetic_teams(num_candidates, required_cookies=required_cookies)
+        elif method == 'synergy':
+            teams = self._generate_synergy_teams(num_candidates, required_cookies=required_cookies)
         elif method == 'exhaustive':
             teams = self._generate_exhaustive_teams(required_cookies=required_cookies)
         else:
-            raise ValueError(f"Unknown method: {method}. Use 'random', 'greedy', 'genetic', or 'exhaustive'")
+            raise ValueError(f"Unknown method: {method}. Use 'random', 'greedy', 'genetic', 'synergy', or 'exhaustive'")
 
         # Remove duplicate teams (same cookies, different order)
         unique_teams = list(set(teams))
 
         # Sort by score descending and return top N
-        unique_teams.sort(key=lambda t: t.composition_score, reverse=True)
+        # For synergy method, prioritize total_synergy_score, then composition_score
+        if method == 'synergy':
+            unique_teams.sort(key=lambda t: (t.total_synergy_score, t.composition_score), reverse=True)
+        else:
+            unique_teams.sort(key=lambda t: t.composition_score, reverse=True)
         return unique_teams[:n]
 
     def _generate_greedy_teams(self, n: int, required_cookies: Optional[List[str]] = None) -> List[Team]:
@@ -1195,6 +1365,260 @@ class TeamOptimizer:
                 continue
 
         print(f"✅ Generated {len(teams):,} valid teams")
+        return teams
+
+    def _generate_synergy_teams(
+        self,
+        n: int = 100,
+        required_cookies: Optional[List[str]] = None
+    ) -> List[Team]:
+        """
+        Generate teams optimized for synergy bonuses.
+
+        This method prioritizes:
+        1. Special combos (Citrus Party, Silver Knighthood, etc.)
+        2. Synergy groups (Beast, Dragon, Ancient, Kingdom affiliations)
+        3. Element matching (focused elemental damage)
+
+        Args:
+            n: Number of teams to generate
+            required_cookies: Optional list of cookie names that MUST be in every team
+
+        Returns:
+            List[Team]: Teams optimized for synergy
+        """
+        teams = []
+        used_combinations = set()
+
+        # Get required cookies
+        required = []
+        if required_cookies:
+            required = [c for c in self.all_cookies if c.name in required_cookies]
+
+        # Strategy 1: Build teams around special combos
+        special_combo_teams = self._build_special_combo_teams(required, n // 3)
+        teams.extend(special_combo_teams)
+
+        # Track used combinations
+        for team in teams:
+            combo_key = tuple(sorted([c.name for c in team.cookies]))
+            used_combinations.add(combo_key)
+
+        # Strategy 2: Build teams around synergy groups
+        group_teams = self._build_synergy_group_teams(required, n // 3, used_combinations)
+        teams.extend(group_teams)
+
+        # Update used combinations
+        for team in teams:
+            combo_key = tuple(sorted([c.name for c in team.cookies]))
+            used_combinations.add(combo_key)
+
+        # Strategy 3: Build teams around element matching
+        element_teams = self._build_element_teams(required, n // 3, used_combinations)
+        teams.extend(element_teams)
+
+        # Fill remaining slots with high-synergy random teams
+        attempts = 0
+        max_attempts = n * 10
+        while len(teams) < n and attempts < max_attempts:
+            team_cookies = required.copy()
+            available = [c for c in self.all_cookies if c not in team_cookies]
+
+            # Weighted selection favoring cookies with more synergy attributes
+            weights = [
+                1 + len(c.synergy_groups) * 2 + len(c.special_combos) * 3
+                for c in available
+            ]
+
+            slots_to_fill = 5 - len(required)
+            if len(available) >= slots_to_fill:
+                selected = random.choices(available, weights=weights, k=slots_to_fill)
+                team_cookies.extend(selected)
+
+                # Check for duplicates
+                combo_key = tuple(sorted([c.name for c in team_cookies]))
+                if combo_key not in used_combinations:
+                    try:
+                        team = Team(team_cookies)
+                        teams.append(team)
+                        used_combinations.add(combo_key)
+                    except ValueError:
+                        pass
+
+            attempts += 1
+
+        return teams
+
+    def _build_special_combo_teams(
+        self,
+        required: List[Cookie],
+        target_count: int,
+        used_combinations: Optional[set] = None
+    ) -> List[Team]:
+        """Build teams around special combos like Citrus Party, Team Drizzle, etc."""
+        if used_combinations is None:
+            used_combinations = set()
+
+        teams = []
+
+        # Define special combo requirements
+        special_combos = {
+            'Citrus Party': ['Lemon Cookie', 'Orange Cookie', 'Lime Cookie', 'Grapefruit Cookie'],
+            'The Protector of the Golden City': ['Golden Cheese Cookie', 'Burnt Cheese Cookie', 'Smoked Cheese Cookie'],
+            'Silver Knighthood': ['Mercurial Knight Cookie', 'Silverbell Cookie'],
+            'Team Drizzle': ['Choco Drizzle Cookie', 'Green Tea Mousse Cookie', 'Pudding à la Mode Cookie'],
+            'The Deceitful Trio': ['Shadow Milk Cookie', 'Black Sapphire Cookie', 'Candy Apple Cookie']
+        }
+
+        for combo_name, combo_members in special_combos.items():
+            # Get available combo member cookies
+            combo_cookies = [c for c in self.all_cookies if c.name in combo_members]
+
+            if not combo_cookies:
+                continue
+
+            # Try to build teams with this combo
+            attempts = 0
+            while len(teams) < target_count and attempts < target_count * 3:
+                team_cookies = required.copy()
+
+                # Add combo members (at least 2-3)
+                min_members = min(3, len(combo_cookies))
+                combo_sample = random.sample(combo_cookies, min(min_members, len(combo_cookies)))
+                team_cookies.extend([c for c in combo_sample if c not in team_cookies])
+
+                # Fill remaining slots
+                slots_remaining = 5 - len(team_cookies)
+                if slots_remaining > 0:
+                    available = [c for c in self.all_cookies if c not in team_cookies]
+                    if len(available) >= slots_remaining:
+                        team_cookies.extend(random.sample(available, slots_remaining))
+
+                if len(team_cookies) == 5:
+                    combo_key = tuple(sorted([c.name for c in team_cookies]))
+                    if combo_key not in used_combinations:
+                        try:
+                            team = Team(team_cookies)
+                            teams.append(team)
+                            used_combinations.add(combo_key)
+                        except ValueError:
+                            pass
+
+                attempts += 1
+
+        return teams
+
+    def _build_synergy_group_teams(
+        self,
+        required: List[Cookie],
+        target_count: int,
+        used_combinations: Optional[set] = None
+    ) -> List[Team]:
+        """Build teams around synergy groups (Beast, Dragon, Ancient, Kingdoms, etc.)."""
+        if used_combinations is None:
+            used_combinations = set()
+
+        teams = []
+
+        # Get all unique synergy groups
+        all_groups = set()
+        for cookie in self.all_cookies:
+            all_groups.update(cookie.synergy_groups)
+
+        for group in all_groups:
+            # Get cookies in this group
+            group_cookies = [c for c in self.all_cookies if group in c.synergy_groups]
+
+            if len(group_cookies) < 2:
+                continue
+
+            # Try to build teams with 3+ from this group
+            attempts = 0
+            while len(teams) < target_count and attempts < target_count * 2:
+                team_cookies = required.copy()
+
+                # Add 3+ cookies from this group
+                min_group_members = min(3, len(group_cookies))
+                group_sample = random.sample(
+                    [c for c in group_cookies if c not in team_cookies],
+                    min(min_group_members, len([c for c in group_cookies if c not in team_cookies]))
+                )
+                team_cookies.extend(group_sample)
+
+                # Fill remaining slots
+                slots_remaining = 5 - len(team_cookies)
+                if slots_remaining > 0:
+                    available = [c for c in self.all_cookies if c not in team_cookies]
+                    if len(available) >= slots_remaining:
+                        team_cookies.extend(random.sample(available, slots_remaining))
+
+                if len(team_cookies) == 5:
+                    combo_key = tuple(sorted([c.name for c in team_cookies]))
+                    if combo_key not in used_combinations:
+                        try:
+                            team = Team(team_cookies)
+                            teams.append(team)
+                            used_combinations.add(combo_key)
+                        except ValueError:
+                            pass
+
+                attempts += 1
+
+        return teams
+
+    def _build_element_teams(
+        self,
+        required: List[Cookie],
+        target_count: int,
+        used_combinations: Optional[set] = None
+    ) -> List[Team]:
+        """Build teams with focused elemental damage (3+ same element)."""
+        if used_combinations is None:
+            used_combinations = set()
+
+        teams = []
+
+        # Get all unique elements
+        all_elements = set(c.element for c in self.all_cookies if c.element)
+
+        for element in all_elements:
+            # Get cookies with this element
+            element_cookies = [c for c in self.all_cookies if c.element == element]
+
+            if len(element_cookies) < 3:
+                continue
+
+            # Try to build teams with 3+ of this element
+            attempts = 0
+            while len(teams) < target_count and attempts < target_count * 2:
+                team_cookies = required.copy()
+
+                # Add 3+ cookies with this element
+                element_sample = random.sample(
+                    [c for c in element_cookies if c not in team_cookies],
+                    min(3, len([c for c in element_cookies if c not in team_cookies]))
+                )
+                team_cookies.extend(element_sample)
+
+                # Fill remaining slots
+                slots_remaining = 5 - len(team_cookies)
+                if slots_remaining > 0:
+                    available = [c for c in self.all_cookies if c not in team_cookies]
+                    if len(available) >= slots_remaining:
+                        team_cookies.extend(random.sample(available, slots_remaining))
+
+                if len(team_cookies) == 5:
+                    combo_key = tuple(sorted([c.name for c in team_cookies]))
+                    if combo_key not in used_combinations:
+                        try:
+                            team = Team(team_cookies)
+                            teams.append(team)
+                            used_combinations.add(combo_key)
+                        except ValueError:
+                            pass
+
+                attempts += 1
+
         return teams
 
     def filter_by_role(self, role: str) -> List[Cookie]:
